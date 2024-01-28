@@ -1,0 +1,1 @@
+import{u as n,j as s}from"./chunk-_jdiyOdg.js";function i(e){const t=n(),a=[e.className,t.urlPathname===e.href&&"is-active"].filter(Boolean).join(" ");return s.jsx("a",{...e,className:a})}export{i as L};

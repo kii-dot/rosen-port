@@ -1,0 +1,1 @@
+const t="Ambitious Aspirations, Elegant Websites",o="Build your digital presence quick and frictionless",a="Create yours now",i="Log In",s="totoma.com",n=`${s}/`;export{a as c,o as d,i as l,n as s,t};
