@@ -6,7 +6,7 @@ import {
   type NodeHTTPResponse,
 } from '@trpc/server/adapters/node-http';
 import type { PluginOption } from 'vite';
-import { appRouter } from './server';
+import { appRouter } from './routers';
 
 type TrpcPluginOptions<
   TRouter extends AnyRouter,

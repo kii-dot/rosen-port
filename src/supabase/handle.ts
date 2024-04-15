@@ -3,9 +3,9 @@ import { DbConstants } from './dbConstants';
 
 export const checkHandle = async (handle: string) => {
   const { data, error } = await fetchData(
-    DbConstants.handles.name,
-    DbConstants.handles.columns.id.name,
-    DbConstants.handles.columns.handle.name,
+    DbConstants.users.name,
+    DbConstants.users.columns.id.name,
+    DbConstants.users.columns.handle.name,
     handle,
   );
 
@@ -14,9 +14,9 @@ export const checkHandle = async (handle: string) => {
 
 export const getHandle = async (userId: string) => {
   const { data, error } = await fetchData(
-    DbConstants.handles.name,
-    DbConstants.handles.columns.handle.name,
-    DbConstants.handles.columns.id.name,
+    DbConstants.users.name,
+    DbConstants.users.columns.handle.name,
+    DbConstants.users.columns.id.name,
     userId,
   );
 
