@@ -1,4 +1,4 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { PostgrestError, SupabaseClient, createClient } from '@supabase/supabase-js';
 import { ContainerStatus, DbConstants, TxStatus } from './dbConstants';
 
 abstract class DB {
@@ -50,16 +50,13 @@ class ContainerDB extends DB {
   };
 
   getContainerViaChain = async (sourceChain: string, destChain: string, tokenType: string, status: ContainerStatus) => {
-    const { data, error } = await this.supabaseClient
-      .from(DbConstants.transactions.name)
-      .select('*')
-      .or(
-        `${DbConstants.containers.columns.source_chain.name}.eq.${sourceChain}, 
-        ${DbConstants.containers.columns.dest_chain.name}.eq.${destChain},
-        ${DbConstants.containers.columns.token_type.name}.eq.${tokenType},
-        ${DbConstants.containers.columns.status.name}.eq.${status},
-        `,
-      );
+    var andStatement = {
+      [DbConstants.containers.columns.source_chain.name]: sourceChain,
+      [DbConstants.containers.columns.dest_chain.name]: destChain,
+      [DbConstants.containers.columns.token_type.name]: tokenType,
+      [DbConstants.containers.columns.status.name]: status,
+    };
+    const { data, error } = await this.supabaseClient.from(DbConstants.containers.name).select('*').match(andStatement);
 
     return { data, error };
   };
@@ -89,6 +86,15 @@ class TxDB extends DB {
     super();
     this.supabaseClient = supabaseClient;
   }
+
+  getTx = async (txId: string) => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.transactions.name)
+      .select()
+      .eq(DbConstants.transactions.columns.initiated_tx_id.name, txId);
+
+    return { data, error };
+  };
 
   getUserTxs = async (walletAddress: string) => {
     const { data, error } = await this.supabaseClient

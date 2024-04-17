@@ -2,6 +2,7 @@ import { publicProcedure, router } from '#/trpc/generic';
 import { dbClient } from '#/supabase';
 import { z } from 'zod';
 import { ContainerStatus, TxStatus } from '#/supabase/dbConstants';
+import { PostgrestError } from '@supabase/supabase-js';
 
 /**
  * Main Router:
@@ -9,10 +10,10 @@ import { ContainerStatus, TxStatus } from '#/supabase/dbConstants';
  * DONE GET - containers - api/trpc/main.containers
  * - receive limit, and index (int)
  * - get container column from (index) up to (limit)
- * GET - container info - api/trpc/main.container
+ * DONE GET - container info - api/trpc/main.container
  * - receive containerId
  * - get all tx where containerId equals containerId value received
- * GET - userTx - api/trpc/main.txs
+ * DONE GET - userTx - api/trpc/main.txs
  * - receive walletAddress
  * - get all tx where source_address | dest_address == wallet_address
  * - return txs
@@ -44,6 +45,7 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
+      // @todo kii add return for amount of tokens.
       const { data, error } = await dbClient.container.getContainers(input.limit, input.index);
       if (error) {
         return {
@@ -62,6 +64,8 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
+      // @todo kii add return for amount of tokens.
+      // Frontend should cache the data.
       const { data, error } = await dbClient.container.getContainer(input.containerId);
 
       if (error) {
@@ -80,7 +84,7 @@ export const mainRouter = router({
         walletAddress: z.string(),
       }),
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { data, error } = await dbClient.tx.getUserTxs(input.walletAddress);
 
       if (error) {
@@ -99,9 +103,26 @@ export const mainRouter = router({
         txId: z.string(),
       }),
     )
-    .query(async ({ input, ctx }) => {
-      const { req, res } = ctx;
-      const { data, error } = await dbClient.tx.getUserTxs(input.txId);
+    .mutation(async ({ input }) => {
+      // @todo kii the whole refund should be done here.
+      // 1. Update data
+      const { data, error } = await dbClient.tx.updateTxStatus(input.txId, TxStatus.refund_initiated);
+
+      // 2. Verify data is correct
+      //    a. Check explorer
+      //    b. Create refundTx table to check if the refundTx exists
+      // 3. Create Fleet Tx to refund
+      // 4. Sign FleetTx (check security, may be ok for v1)
+      // 5. Send user the txId
+      if (error) {
+        return {
+          error,
+        };
+      }
+
+      return {
+        data,
+      };
     }),
   create: publicProcedure
     .input(
@@ -114,9 +135,7 @@ export const mainRouter = router({
         destChainAddress: z.string(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      const { req, res } = ctx;
-      console.log(input);
+    .mutation(async ({ input }) => {
       // 1. Get container to see if it exists
       //    where container.sourceChain,
       //    container.destChain,
@@ -129,20 +148,37 @@ export const mainRouter = router({
         ContainerStatus.initiated,
       );
 
+      if (error) {
+        logAndThrow(error);
+        return {
+          error,
+        };
+      }
+
       // 1.5. If there is no container, create new container
       //      if not create tx.
       var containerId = '';
       if (data == null) {
-        const { data, error } = await dbClient.container.createContainer(
+        const containerData = await dbClient.container.createContainer(
           input.sourceChain,
           input.destChain,
           input.tokenType,
         );
-        // @todo kii set containerId here
+
+        if (containerData !== null && containerData.data !== null) {
+          containerId = containerData.data[0].id;
+        } else {
+          logAndThrow(error);
+          return {
+            error,
+          };
+        }
+      } else {
+        containerId = data[0].id;
       }
 
       // 2. Create Fleet Tx
-      const txId = '';
+      const txId = '8f88181a1426afc7467fa5e1d8fea87bf53a8ad32c8f6c2400ccb4a6c1217a03';
       // 3. Save Tx to database
       const txData = await dbClient.tx.createTx(
         txId,
@@ -153,6 +189,22 @@ export const mainRouter = router({
       );
 
       // 4. send back the tx to sign
-      return { message: 'pong: create working' };
+      if (txData.error) {
+        logAndThrow(error);
+        return {
+          error,
+        };
+      }
+
+      return {
+        data: txData.data,
+      };
     }),
 });
+
+const logAndThrow = (error: PostgrestError | null) => {
+  if (error) {
+    console.log(error);
+    return error;
+  }
+};

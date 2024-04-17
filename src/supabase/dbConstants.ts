@@ -9,24 +9,24 @@ const DB_TYPE = {
 };
 
 export enum TxStatus {
-  drafted,
-  unconfirmed,
-  confirmed,
-  bridged,
-  sent,
-  refund_initiated,
-  refund_in_process,
-  refund_processed,
-  refund_verified,
+  drafted = 'drafted',
+  unconfirmed = 'unconfirmed',
+  confirmed = 'confirmed',
+  bridged = 'bridged',
+  sent = 'sent',
+  refund_initiated = 'refund_initiated',
+  refund_in_process = 'refund_in_process',
+  refund_processed = 'refund_processed',
+  refund_verified = 'refund_verified',
 }
 
 export enum ContainerStatus {
-  initiated,
-  filling_in_progress,
-  filled,
-  bridged,
-  fund_distribution_in_progress,
-  funds_distributed,
+  initiated = 'initiated',
+  filling_in_progress = 'filling_in_progress',
+  filled = 'filled',
+  bridged = 'bridged',
+  fund_distribution_in_progress = 'fund_distribution_in_progress',
+  funds_distributed = 'fund_distributed',
 }
 
 export const DbConstants = {
