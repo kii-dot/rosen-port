@@ -3,48 +3,104 @@ const DB_TYPE = {
   varchar: 'varchar',
   timestamp: 'timestampz',
   bool: 'bool',
+  text: 'text',
+  container_status: 'container_status',
+  tx_status: 'tx_status',
 };
 
+export enum TxStatus {
+  drafted,
+  unconfirmed,
+  confirmed,
+  bridged,
+  sent,
+  refund_initiated,
+  refund_in_process,
+  refund_processed,
+  refund_verified,
+}
+
+export enum ContainerStatus {
+  initiated,
+  filling_in_progress,
+  filled,
+  bridged,
+  fund_distribution_in_progress,
+  funds_distributed,
+}
+
 export const DbConstants = {
-  users: {
-    name: 'users',
+  containers: {
+    name: 'containers',
     columns: {
       id: {
         name: 'id',
         type: DB_TYPE.uuid,
-      },
-      email: {
-        name: 'email',
-        type: DB_TYPE.varchar,
-      },
-      handle: {
-        name: 'handle',
-        type: DB_TYPE.varchar,
       },
       created_at: {
         name: 'created_at',
         type: DB_TYPE.timestamp,
       },
-    },
-  },
-  stripeAccount: {
-    name: 'stripe_account',
-    columns: {
-      id: {
-        name: 'id',
-        type: DB_TYPE.uuid,
+      bridged_time: {
+        name: 'bridged_time',
+        type: DB_TYPE.timestamp,
       },
-      user_id: {
-        name: 'user_id',
-        type: DB_TYPE.uuid,
-      },
-      account_id: {
-        name: 'account_id',
+      source_chain: {
+        name: 'source_chain',
         type: DB_TYPE.varchar,
       },
-      onboarded: {
-        name: 'onboarded',
-        type: DB_TYPE.bool,
+      dest_chain: {
+        name: 'dest_chain',
+        type: DB_TYPE.varchar,
+      },
+      token_type: {
+        name: 'token_type',
+        type: DB_TYPE.uuid,
+      },
+      status: {
+        name: 'status',
+        type: DB_TYPE.container_status,
+      },
+    },
+  },
+  transactions: {
+    name: 'transactions',
+    columns: {
+      created_at: {
+        name: 'created_at',
+        type: DB_TYPE.timestamp,
+      },
+      initiated_tx_id: {
+        name: 'initiated_tx_id',
+        type: DB_TYPE.varchar,
+      },
+      amount: {
+        name: 'amount',
+        type: DB_TYPE.text,
+      },
+      source_address: {
+        name: 'source_address',
+        type: DB_TYPE.varchar,
+      },
+      dest_address: {
+        name: 'dest_address',
+        type: DB_TYPE.varchar,
+      },
+      tx_status: {
+        name: 'tx_status',
+        type: DB_TYPE.tx_status,
+      },
+      refund_tx_id: {
+        name: 'refund_tx_id',
+        type: DB_TYPE.varchar,
+      },
+      distributed_tx_id: {
+        name: 'distributed_tx_id',
+        type: DB_TYPE.varchar,
+      },
+      container_id: {
+        name: 'container_id',
+        type: DB_TYPE.uuid,
       },
     },
   },

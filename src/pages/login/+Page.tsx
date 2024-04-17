@@ -18,14 +18,25 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     // Authentication logic goes here
     const queryInput = {
-      email: email,
-      password: password,
+      sourceChain: 'ergo',
+      destChain: 'cardano',
+      amount: 1000000,
+      tokenType: 'erg',
+      sourceAddress: '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops',
+      destChainAddress:
+        'addr1q8zjxvnj9cqh2ernglzgem8c0kvvp7nlmtqvzztyevpx2h6fa3yr34tv9qgjvkyz3q2f9hqrycace02rfzqv8dwvq7zse2hp6c',
     };
-    const loginResp = await trpc.auth.login.mutate(queryInput);
-    if (loginResp?.id !== null && loginResp?.id) {
-      console.log('navigating to page');
-      window.location.href = `/@${loginResp?.id}`;
-    }
+
+    console.log(queryInput);
+    const handleResp = await trpc.main.txs.query({
+      walletAddress: '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops',
+    });
+    console.log(handleResp);
+    // const loginResp = await trpc.auth.login.mutate(queryInput);
+    // if (loginResp?.id !== null && loginResp?.id) {
+    // console.log('navigating to page');
+    // window.location.href = `/@${loginResp?.id}`;
+    // }
   };
 
   const renderHeading = () => {
