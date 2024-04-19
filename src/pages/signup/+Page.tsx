@@ -50,17 +50,18 @@ const ClaimLinkPage: React.FC = () => {
     // Once we sign up, we send it to back end to process handle.
     try {
       const queryInput = {
-        handle: userHandle,
-        email: email,
-        password: password,
+        txId: '123',
+        sourceChain: 'ergo',
+        destChain: 'carcano',
+        amount: 1000000,
+        tokenType: 'erg',
+        sourceAddress: '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops',
+        destChainAddress:
+          'addr1q8zjxvnj9cqh2ernglzgem8c0kvvp7nlmtqvzztyevpx2h6fa3yr34tv9qgjvkyz3q2f9hqrycace02rfzqv8dwvq7zse2hp6c',
       };
-      const handleResp = await trpc.auth.createHandle.mutate(queryInput);
+
+      const handleResp = await trpc.main.create.mutate(queryInput);
       console.log('handle added:', handleResp);
-      if (handleResp.data !== null && handleResp.data[0].handle === userHandle) {
-        const userProfile = `/@${userHandle}`;
-        console.log("We're navigating to" + userProfile);
-        window.location.href = userProfile;
-      }
       // const handleResp = await createHandle(userHandle, signUpResp.data.user.id);
     } catch (error) {
       console.error('Error adding handle:', error);
