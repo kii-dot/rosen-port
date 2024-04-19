@@ -39,12 +39,10 @@ class ContainerDB extends DB {
   };
 
   getContainer = async (containerId: string) => {
-    const { data, error } = await this.fetchData(
-      DbConstants.containers.name,
-      '*',
-      DbConstants.containers.columns.id.name,
-      containerId,
-    );
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.containers.name)
+      .select()
+      .eq(DbConstants.containers.columns.id.name, containerId);
 
     return { data, error };
   };
@@ -116,6 +114,27 @@ class TxDB extends DB {
       .or(
         `${DbConstants.transactions.columns.source_address.name}.eq.${walletAddress}, ${DbConstants.transactions.columns.dest_address.name}.eq.${walletAddress}`,
       );
+
+    return { data, error };
+  };
+
+  getContainerTxs = async (containerId: string) => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.transactions.name)
+      .select(
+        `
+        id,
+        created_at,
+        initiated_tx_id,
+        amount,
+        source_address,
+        dest_address,
+        tx_status,
+        refund_tx_id,
+        distributed_tx_id
+      `,
+      )
+      .eq(DbConstants.transactions.columns.container_id.name, containerId);
 
     return { data, error };
   };

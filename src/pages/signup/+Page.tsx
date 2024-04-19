@@ -50,6 +50,7 @@ const ClaimLinkPage: React.FC = () => {
     // Once we sign up, we send it to back end to process handle.
     try {
       const queryInput = {
+        txId: '123',
         sourceChain: 'ergo',
         destChain: 'carcano',
         amount: 1000000,
@@ -59,7 +60,6 @@ const ClaimLinkPage: React.FC = () => {
           'addr1q8zjxvnj9cqh2ernglzgem8c0kvvp7nlmtqvzztyevpx2h6fa3yr34tv9qgjvkyz3q2f9hqrycace02rfzqv8dwvq7zse2hp6c',
       };
 
-      console.log(queryInput);
       const handleResp = await trpc.main.create.mutate(queryInput);
       console.log('handle added:', handleResp);
       // const handleResp = await createHandle(userHandle, signUpResp.data.user.id);

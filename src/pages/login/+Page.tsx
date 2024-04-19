@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
     };
 
     console.log(queryInput);
-    const handleResp = await trpc.main.create.mutate(queryInput);
+    const handleResp = await trpc.main.containers.query({ limit: 100, index: 0 });
     console.log(handleResp);
     // const loginResp = await trpc.auth.login.mutate(queryInput);
     // if (loginResp?.id !== null && loginResp?.id) {

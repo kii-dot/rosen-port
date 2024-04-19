@@ -5,38 +5,39 @@ import { ContainerStatus, TxStatus } from '#/supabase/dbConstants';
 import { PostgrestError } from '@supabase/supabase-js';
 
 /**
- * Main Router:
+ * The `mainRouter` is responsible for handling various API requests related
+ * to containers and transactions within a blockchain-based system. It uses
+ * tRPC for creating type-safe APIs and integrates with a Supabase backend.
  *
- * DONE GET - containers - api/trpc/main.containers
- * - receive limit, and index (int)
- * - get container column from (index) up to (limit)
- * DONE GET - container info - api/trpc/main.container
- * - receive containerId
- * - get all tx where containerId equals containerId value received
- * DONE GET - userTx - api/trpc/main.txs
- * - receive walletAddress
- * - get all tx where source_address | dest_address == wallet_address
- * - return txs
+ * GET - containers - api/trpc/main.containers
+ * GET - container info - api/trpc/main.container
+ * GET - userTx - api/trpc/main.txs
  * PUT - refund - api/trpc/main.refund
- * - receives txId for refund
- * - get tx row via txId
- * - check to see if tx status == confirmed
- * - change status to refund_initiated
- * - And create fleet tx
- *    to send refund service fee to client
+ * PUT - UpdateTxAsSigned - api/trpc/main.updateTxAsSigned
  * POST - createTx - api/trpc/main.create
- * - receives (SourceChain, DestChain, TokenType, TokenAmount, DestChainAddress)
- * - try to get container with sourcechain, destchain, tokentype, and status == initiated
- *      - if does not exist, create a new container with (sourcechain, destchain, tokenType, status == initiated)
- * - create the txs to send to frontend to sign
- *        tx = userWallet -> rosenPort wallet (based on sourceChain)
- * - create a tx with foreign key linked to containerid, and txId from fleet tx
- *      in previous step
  */
 export const mainRouter = router({
+  /**
+   * Simple ping endpoint to check the health of the router.
+   */
   ping: publicProcedure.query(async () => {
-    return { message: 'pong: PageRouter working' };
+    return { message: 'pong: mainRouter working' };
   }),
+  /*
+   * DONE GET - containers - api/trpc/main.containers
+   *
+   * Fetches a list of containers starting from a given index with a set limit,
+   * and calculates the total transaction amount for each container.
+   *
+   * <input>
+   * limit: number
+   * index: number
+   * </input>
+   *
+   * <return>
+   * containers: Container[]
+   * </return>
+   */
   containers: publicProcedure
     .input(
       z.object({
@@ -45,18 +46,34 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      // @todo kii add return for amount of tokens.
       const { data, error } = await dbClient.container.getContainers(input.limit, input.index);
-      if (error) {
-        return {
-          error,
-        };
+      if (error) return { error };
+
+      if (data) {
+        for (let container of data) {
+          const txs = await dbClient.tx.getContainerTxs(container.id);
+          container.amount = txs.data?.reduce((acc, tx) => acc + Number(tx.amount), 0) || 0;
+        }
+        return { containers: data };
       }
 
-      return {
-        data,
-      };
+      return { error: 'No Containers available' };
     }),
+  /*
+   * DONE GET - container info - api/trpc/main.container
+   *
+   * Retrieves detailed information about a specific container including
+   * all transactions associated with it.
+   *
+   * <input>
+   * containerId: string
+   * </input>
+   *
+   * <return>
+   * container: Container
+   * txs: Tx[]
+   * </return>
+   */
   container: publicProcedure
     .input(
       z.object({
@@ -64,20 +81,33 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      // @todo kii add return for amount of tokens.
-      // Frontend should cache the data.
       const { data, error } = await dbClient.container.getContainer(input.containerId);
+      if (error) return { error };
 
-      if (error) {
+      if (data) {
+        const txs = await dbClient.tx.getContainerTxs(input.containerId);
+        const amount = txs.data?.reduce((acc, tx) => acc + Number(tx.amount), 0) || 0;
         return {
-          error,
+          container: { ...data[0], amount },
+          txs,
         };
       }
-
-      return {
-        data,
-      };
+      return { error: `Container with ID ${input.containerId} does not exist` };
     }),
+  /*
+   * DONE GET - userTx - api/trpc/main.txs
+   *
+   * Fetches all transactions associated with a given wallet address,
+   * where the wallet is either the source address or the destination address.
+   *
+   * <input>
+   * walletAddress: string
+   * </input>
+   *
+   * <return>
+   * txs: Tx[]
+   * </return>
+   */
   txs: publicProcedure
     .input(
       z.object({
@@ -94,9 +124,29 @@ export const mainRouter = router({
       }
 
       return {
-        data,
+        txs: data,
       };
     }),
+  /*
+   * PUT - refund - api/trpc/main.refund
+   *
+   * - get tx row via txId
+   * - check to see if tx status == confirmed
+   * - change status to refund_initiated
+   * - And create fleet tx
+   *    to send refund service fee to client
+   * Initiates a refund for a transaction that has been confirmed,
+   * changing its status and potentially initiating a new transaction
+   * for refund purposes.
+   *
+   * <input>
+   * txId: string
+   * </input>
+   *
+   * <return>
+   * updatedTx: Tx
+   * </return>
+   */
   refund: publicProcedure
     .input(
       z.object({
@@ -106,27 +156,99 @@ export const mainRouter = router({
     .mutation(async ({ input }) => {
       // @todo kii the whole refund should be done here.
       // 1. Update data
-      const { data, error } = await dbClient.tx.updateTxStatus(input.txId, TxStatus.refund_initiated);
+      const txData = await dbClient.tx.getTx(input.txId);
+      if (txData.data !== null) {
+        const tx = txData.data[0];
 
-      // 2. Verify data is correct
-      //    a. Check explorer
-      //    b. Create refundTx table to check if the refundTx exists
-      // 3. Create Fleet Tx to refund
-      // 4. Sign FleetTx (check security, may be ok for v1)
-      // 5. Send user the txId
+        // If Tx is not confirmed, throw error
+        if (tx.status !== TxStatus.confirmed) {
+          return {
+            error: 'Tx cannot be refunded',
+          };
+        }
+
+        // 2. Verify data is correct
+        //    a. Check explorer to see if there is a service fee paid
+        //    b. Create refundTx table to check if the refundTx exists
+        const { data, error } = await dbClient.tx.updateTxStatus(input.txId, TxStatus.refund_initiated);
+        if (data !== null) {
+          return {
+            updatedTx: data,
+          };
+        }
+
+        return {
+          error: `Tx with ${input.txId} is not available`,
+        };
+      }
+    }),
+  /*
+   * DONE PUT - UpdateTxAsSigned - api/trpc/main.updateTxAsSigned
+   *
+   * Updates the status of a transaction to mark it as 'signed' by the user.
+   * This is done after user has signed the tx. The Tx is created and signed
+   * on the frontend.
+   *
+   * <input>
+   * txId: string
+   * </input>
+   *
+   * <return>
+   * updatedTx: Tx
+   * </return>
+   */
+  updateTxAsSigned: publicProcedure
+    .input(
+      z.object({
+        txId: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { data, error } = await dbClient.tx.updateTxStatus(input.txId, TxStatus.unconfirmed);
+
       if (error) {
         return {
           error,
         };
       }
 
+      if (data !== null) {
+        return {
+          updatedTx: data[0],
+        };
+      }
+
       return {
-        data,
+        error: `Tx with ${input.txId} is not available`,
       };
     }),
+  /*
+   * DONE POST - createTx - api/trpc/main.create
+   *
+   * - try to get container with sourcechain, destchain, tokentype, and status == initiated
+   *      - if does not exist, create a new container with (sourcechain, destchain, tokenType, status == initiated)
+   * Creates a new transaction, potentially creating a new container if one
+   * with the specified characteristics does not exist.
+   * The tx is created and signed from the client side.
+   *
+   * <input>
+   * txId: string
+   * sourceChain: string
+   * destChain: string
+   * tokenType: string
+   * tokenAmount: number
+   * sourceChainAddress: string
+   * destChainAddress: string
+   * </input>
+   *
+   * <return>
+   * tx: Tx
+   * </return>
+   */
   create: publicProcedure
     .input(
       z.object({
+        txId: z.string(),
         sourceChain: z.string(),
         destChain: z.string(),
         amount: z.number(),
@@ -177,18 +299,15 @@ export const mainRouter = router({
         containerId = data[0].id;
       }
 
-      // 2. Create Fleet Tx
-      const txId = '8f88181a1426afc7467fa5e1d8fea87bf53a8ad32c8f6c2400ccb4a6c1217a03';
       // 3. Save Tx to database
       const txData = await dbClient.tx.createTx(
-        txId,
+        input.txId,
         input.amount,
         input.sourceAddress,
         input.destChainAddress,
         containerId,
       );
 
-      // 4. send back the tx to sign
       if (txData.error) {
         logAndThrow(error);
         return {
@@ -197,7 +316,7 @@ export const mainRouter = router({
       }
 
       return {
-        data: txData.data,
+        tx: txData.data,
       };
     }),
 });
