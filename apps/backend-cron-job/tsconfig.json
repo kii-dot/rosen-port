@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.novite.json",
+  "compilerOptions": {
+    "target": "esnext",
+    "outDir": "dist",
+    "rootDir": "./"
+  },
+  "include": ["src"]
+}

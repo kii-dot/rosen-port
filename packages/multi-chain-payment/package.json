@@ -1,10 +1,9 @@
 {
-  "name": "rosen-port-sdk",
+  "name": "multi-chain-payment",
   "version": "0.1.0",
-  "description": "Rosen Port sdk",
+  "description": "multi chain payment",
   "keywords": [
-    "rosen-port",
-    "sdk"
+    "multi-chain-payment"
   ],
   "license": "MIT",
   "main": "dist/index.js",
