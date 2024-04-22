@@ -1,8 +1,14 @@
 import { publicProcedure, router } from '#/trpc/generic';
-import { dbClient } from '#/supabase';
+import { dbClient } from '#/tools/db';
 import { z } from 'zod';
-import { ContainerStatus, TxStatus } from '#/supabase/dbConstants';
-import { PostgrestError } from '@supabase/supabase-js';
+import { ContainerStatus, TxStatus, Tx } from '@rosen-port/db';
+import logger from '#/tools/logger';
+import {
+  ContainerNotAvailableError,
+  NoContainersFoundError,
+  NoTxFoundError,
+  TxNotAvailableError,
+} from '#/errors/RouterErrors';
 
 /**
  * The `mainRouter` is responsible for handling various API requests related
@@ -46,18 +52,21 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const { data, error } = await dbClient.container.getContainers(input.limit, input.index);
-      if (error) return { error };
+      try {
+        var containers = await dbClient.container.getContainers(input.limit, input.index);
 
-      if (data) {
-        for (let container of data) {
+        for (let container of containers) {
           const txs = await dbClient.tx.getContainerTxs(container.id);
-          container.amount = txs.data?.reduce((acc, tx) => acc + Number(tx.amount), 0) || 0;
-        }
-        return { containers: data };
-      }
 
-      return { error: 'No Containers available' };
+          container.totalAmount = txs.reduce((acc: number, tx: Tx) => acc + Number(tx.amount), 0) || 0;
+        }
+
+        return { containers: containers };
+      } catch (error) {
+        const noContainersFoundError = new NoContainersFoundError(error);
+        logger.error(noContainersFoundError.errorMessage);
+        return { error: noContainersFoundError.error };
+      }
     }),
   /*
    * DONE GET - container info - api/trpc/main.container
@@ -81,18 +90,22 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const { data, error } = await dbClient.container.getContainer(input.containerId);
-      if (error) return { error };
+      try {
+        var container = await dbClient.container.getContainer(input.containerId);
 
-      if (data) {
         const txs = await dbClient.tx.getContainerTxs(input.containerId);
-        const amount = txs.data?.reduce((acc, tx) => acc + Number(tx.amount), 0) || 0;
+        const amount = txs.reduce((acc: number, tx) => acc + Number(tx.amount), 0) || 0;
+        container.totalAmount = amount;
         return {
-          container: { ...data[0], amount },
+          container: container,
           txs,
         };
+      } catch (error) {
+        const containerNotAvailableError = new ContainerNotAvailableError(input.containerId, error);
+        logger.error(containerNotAvailableError.errorMessage);
+
+        return { error: containerNotAvailableError.error };
       }
-      return { error: `Container with ID ${input.containerId} does not exist` };
     }),
   /*
    * DONE GET - userTx - api/trpc/main.txs
@@ -115,17 +128,19 @@ export const mainRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const { data, error } = await dbClient.tx.getUserTxs(input.walletAddress);
+      try {
+        const txs = await dbClient.tx.getUserTxs(input.walletAddress);
 
-      if (error) {
         return {
-          error,
+          txs,
+        };
+      } catch (error) {
+        const noTxFoundError = new NoTxFoundError(error);
+        logger.error(noTxFoundError.errorMessage);
+        return {
+          error: noTxFoundError.error,
         };
       }
-
-      return {
-        txs: data,
-      };
     }),
   /*
    * PUT - refund - api/trpc/main.refund
@@ -154,31 +169,35 @@ export const mainRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      // @todo kii the whole refund should be done here.
-      // 1. Update data
-      const txData = await dbClient.tx.getTx(input.txId);
-      if (txData.data !== null) {
-        const tx = txData.data[0];
+      try {
+        // @todo kii the whole refund should be done here.
+        // 1. Update data
+        const txData = await dbClient.tx.getTx(input.txId);
+        if (txData !== null) {
+          const tx = txData;
 
-        // If Tx is not confirmed, throw error
-        if (tx.status !== TxStatus.confirmed) {
-          return {
-            error: 'Tx cannot be refunded',
-          };
+          // If Tx is not confirmed, throw error
+          if (tx.txStatus !== TxStatus.confirmed) {
+            return {
+              error: 'Tx cannot be refunded: tx is not in confirmed state and cannot be refunded.',
+            };
+          }
+
+          // 2. Verify data is correct
+          //    a. Check explorer to see if there is a service fee paid
+          //    b. Create refundTx table to check if the refundTx exists
+          const updatedTx = await dbClient.tx.updateTxStatus(input.txId, TxStatus.refund_initiated);
+          if (updatedTx !== null) {
+            return {
+              updatedTx,
+            };
+          }
         }
-
-        // 2. Verify data is correct
-        //    a. Check explorer to see if there is a service fee paid
-        //    b. Create refundTx table to check if the refundTx exists
-        const { data, error } = await dbClient.tx.updateTxStatus(input.txId, TxStatus.refund_initiated);
-        if (data !== null) {
-          return {
-            updatedTx: data,
-          };
-        }
-
+      } catch (error) {
+        const txNotAvailableError = new TxNotAvailableError(input.txId, error);
+        logger.error(txNotAvailableError.errorMessage);
         return {
-          error: `Tx with ${input.txId} is not available`,
+          error: txNotAvailableError.error,
         };
       }
     }),
@@ -204,23 +223,19 @@ export const mainRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      const { data, error } = await dbClient.tx.updateTxStatus(input.txId, TxStatus.unconfirmed);
+      try {
+        const tx = await dbClient.tx.updateTxStatus(input.txId, TxStatus.unconfirmed);
 
-      if (error) {
         return {
-          error,
+          updatedTx: tx,
+        };
+      } catch (error) {
+        const txNotAvailableError = new TxNotAvailableError(input.txId, error);
+        logger.error(txNotAvailableError.errorMessage);
+        return {
+          error: txNotAvailableError.error,
         };
       }
-
-      if (data !== null) {
-        return {
-          updatedTx: data[0],
-        };
-      }
-
-      return {
-        error: `Tx with ${input.txId} is not available`,
-      };
     }),
   /*
    * DONE POST - createTx - api/trpc/main.create
@@ -258,72 +273,51 @@ export const mainRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      // 1. Get container to see if it exists
-      //    where container.sourceChain,
-      //    container.destChain,
-      //    container.tokenType,
-      //    container.status == ContainerStatus.Initiated
-      const { data, error } = await dbClient.container.getContainerViaChain(
-        input.sourceChain,
-        input.destChain,
-        input.tokenType,
-        ContainerStatus.initiated,
-      );
-
-      if (error) {
-        logAndThrow(error);
-        return {
-          error,
-        };
-      }
-
-      // 1.5. If there is no container, create new container
-      //      if not create tx.
-      var containerId = '';
-      if (data == null) {
-        const containerData = await dbClient.container.createContainer(
+      try {
+        // 1. Get container to see if it exists
+        //    where container.sourceChain,
+        //    container.destChain,
+        //    container.tokenType,
+        //    container.status == ContainerStatus.Initiated
+        const container = await dbClient.container.getContainerViaChain(
           input.sourceChain,
           input.destChain,
           input.tokenType,
+          ContainerStatus.initiated,
         );
 
-        if (containerData !== null && containerData.data !== null) {
-          containerId = containerData.data[0].id;
+        // 1.5. If there is no container, create new container
+        //      if not create tx.
+        var containerId = '';
+        if (container === null) {
+          const createdContainer = await dbClient.container.createContainer(
+            input.sourceChain,
+            input.destChain,
+            input.tokenType,
+          );
+
+          containerId = createdContainer.id;
         } else {
-          logAndThrow(error);
-          return {
-            error,
-          };
+          containerId = container[0].id;
         }
-      } else {
-        containerId = data[0].id;
-      }
 
-      // 3. Save Tx to database
-      const txData = await dbClient.tx.createTx(
-        input.txId,
-        input.amount,
-        input.sourceAddress,
-        input.destChainAddress,
-        containerId,
-      );
+        // 3. Save Tx to database
+        const tx = await dbClient.tx.createTx(
+          input.txId,
+          input.amount,
+          input.sourceAddress,
+          input.destChainAddress,
+          containerId,
+        );
 
-      if (txData.error) {
-        logAndThrow(error);
+        return {
+          tx,
+        };
+      } catch (error) {
+        logger.error(error);
         return {
           error,
         };
       }
-
-      return {
-        tx: txData.data,
-      };
     }),
 });
-
-const logAndThrow = (error: PostgrestError | null) => {
-  if (error) {
-    console.log(error);
-    return error;
-  }
-};
