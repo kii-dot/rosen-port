@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from '#/components/Link';
-import { authenticateUserViaEmailPassword } from '#/supabase/auth';
-import { getHandle } from '#/supabase/handle';
 import { trpc } from '#/trpc/client';
 import { query } from 'express';
 

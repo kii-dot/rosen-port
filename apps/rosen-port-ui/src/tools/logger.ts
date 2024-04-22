@@ -1,10 +1,7 @@
 import pino from 'pino';
 import dotenv from 'dotenv';
-import path from 'path';
 
-dotenv.config({
-  path: path.resolve(import.meta.dir, '../..', '.env'),
-});
+dotenv.config();
 
 const logger = pino({
   level: process.env.PINO_LOG_LEVEL || 'info',

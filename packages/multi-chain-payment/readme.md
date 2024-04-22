@@ -41,14 +41,17 @@ const mcp = new MultiChainPayment({
     paymentAddresses: walletAddresses
 })
 
+const chain = Chain.bitcoin
+
 const amountInUSD = 10000 // $100
 const paymentTxForBtc = mcp.createPaymentTo({
-    chain: "bitcoin",
-    amountInUSD
+    chain,
+    amountInUSD,
+    paymentAddress: walletAddresses.bitcoin // optional, if paymentAddress is not defined, it will default to address in paymentAddresses
 })
 
 const btcWallet = MCPWallet.create({
-    chain: "bitcoin",
+    chain,
     mnemonic: "test-mnemonic"
 })
 
