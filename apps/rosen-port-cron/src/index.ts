@@ -1,12 +1,12 @@
-import * as cron from "node-cron"
-import { dbClient } from "./supabase";
+import * as cron from 'node-cron';
+import { dbClient } from './tools/db';
 
 /**
  * Change this to 30 minutes
  */
 cron.schedule('*/1 * * * *', async () => {
   // Run a runner where it Bridge
-  // 1. Checks containers that are initiated on whether the amount is full. 
+  // 1. Checks containers that are initiated on whether the amount is full.
   // 2a. If the amount is not filled -> sleep and wait
   // 2b. If the amount is filled -> send it to Rosen to bridge
   // 3. Update status of the containers
