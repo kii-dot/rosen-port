@@ -1,5 +1,5 @@
 import { RosenChainToken } from '@rosen-bridge/tokens';
-import { IChainTx } from '../../../types/ChainTxs';
+import { FundsTo, IChainTx } from '../../../types/ChainTxs';
 import { validateDecimalPlaces } from '@rosen-ui/utils';
 import { convertNumberToBigint } from '../ergo';
 import * as wasm from '@emurgo/cardano-serialization-lib-nodejs';
@@ -13,31 +13,36 @@ import {
   AssetBalance,
   selectCardanoUtxos,
 } from '@rosen-bridge/cardano-utxo-selection';
-import { ADA_POLICY_ID } from '../../../types/CardanoChainTypes';
+import { ADA_POLICY_ID, UnsignedPsbtData } from '@rosen-port/chains';
 import { feeAndMinBoxValue } from '../../../constants/CardanoChainConstants';
 import {
   getUtxoAssets,
   subtractAssetBalance,
   sumAssetBalance,
 } from './assetCalculator';
+import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
 
 export class CardanoChainTx implements IChainTx {
   async connect(): Promise<boolean> {
     return true;
   }
 
-  async generateUnsignedTransferTx(
-    token: RosenChainToken,
-    decimalAmount: number,
-    toAddress: string
-  ): Promise<any> {
-    validateDecimalPlaces(decimalAmount, token.decimals);
+  async disperseFunds(
+    to: Array<FundsTo>
+  ): Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>> {
+    throw new Error('Not Implemented');
+  }
+
+  async generateUnsignedTransferTx(to: FundsTo): Promise<any> {
+    validateDecimalPlaces(to.decimalAmount, to.token.decimals);
 
     // 1. Get Cardano wallet
     const wallet = await cardano.lace.enable();
-    const policyIdHex = token.policyId;
-    const assetNameHex = token.assetName;
-    const amount = convertNumberToBigint(decimalAmount * 10 ** token.decimals);
+    const policyIdHex = to.token.policyId;
+    const assetNameHex = to.token.assetName;
+    const amount = convertNumberToBigint(
+      to.decimalAmount * 10 ** to.token.decimals
+    );
 
     const changeAddressHex = await wallet.getChangeAddress();
     // @todo kii check if we need auxiliaryDataHex
@@ -46,7 +51,7 @@ export class CardanoChainTx implements IChainTx {
     if (!walletUtxos) throw Error(`Failed to fetch wallet utxos`);
     return await this.generateUnsignedTx(
       walletUtxos,
-      toAddress,
+      to.toAddress,
       changeAddressHex,
       policyIdHex,
       assetNameHex,

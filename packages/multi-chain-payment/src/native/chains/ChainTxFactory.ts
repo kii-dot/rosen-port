@@ -1,4 +1,4 @@
-import { Networks } from '../../constants';
+import { Networks } from '@rosen-port/chains';
 import { ChainNotImplementedError } from '../../error/ChainTxErrors';
 import { IChainTx } from '../../types/ChainTxs';
 import { BitcoinChainTx } from './bitcoin';

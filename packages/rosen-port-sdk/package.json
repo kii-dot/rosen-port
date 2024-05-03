@@ -42,5 +42,8 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "@rosen-port/chains": "^0.1.0",
+    "@rosen-port/db": "^0.1.0",
+    "@rosen-port/errors": "^0.1.0"
   }
 }

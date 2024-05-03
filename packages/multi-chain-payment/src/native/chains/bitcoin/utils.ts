@@ -1,10 +1,6 @@
 import Axios from 'axios';
 import { Psbt } from 'bitcoinjs-lib';
-import {
-  BitcoinUtxo,
-  EsploraAddress,
-  EsploraUtxo,
-} from '../../../types/BitcoinTxTypes';
+import { BitcoinUtxo, EsploraAddress, EsploraUtxo } from '@rosen-port/chains';
 import {
   CONFIRMATION_TARGET,
   SEGWIT_INPUT_WEIGHT_UNIT,

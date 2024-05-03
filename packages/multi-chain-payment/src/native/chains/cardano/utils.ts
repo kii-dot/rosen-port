@@ -1,5 +1,5 @@
 import cardanoKoiosClientFactory from '@rosen-clients/cardano-koios';
-import { CardanoProtocolParams } from '../../../types/CardanoChainTypes';
+import { CardanoProtocolParams } from '@rosen-port/chains';
 import * as wasm from '@emurgo/cardano-serialization-lib-nodejs';
 import {
   AssetBalance,

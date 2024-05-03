@@ -1,5 +1,4 @@
-import { RosenChainToken } from '@rosen-bridge/tokens';
-import { IChainTx } from '../../../types/ChainTxs';
+import { FundsTo, IChainTx } from '../../../types/ChainTxs';
 import { validateDecimalPlaces } from '@rosen-ui/utils';
 import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
 import { AssetBalance, ErgoBoxProxy } from '@rosen-bridge/ergo-box-selection';
@@ -14,30 +13,37 @@ import {
   sumAssetBalance,
 } from './utils';
 import { unsignedTransactionToProxy } from './proxyTransformation';
+import { UnsignedPsbtData } from '@rosen-port/chains';
 
 export class ErgoChainTx implements IChainTx {
   async connect(): Promise<boolean> {
     return await ergoConnector.nautilus.connect({ createErgoObject: false });
   }
 
-  async generateUnsignedTransferTx(
-    token: RosenChainToken,
-    decimalAmount: number,
-    toAddress: string
-  ): Promise<any> {
-    validateDecimalPlaces(decimalAmount, token.decimals);
+  async disperseFunds(
+    to: Array<FundsTo>
+  ): Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>> {
+    throw new Error('Not Implemented');
+  }
+
+  async generateUnsignedTransferTx(to: FundsTo): Promise<any> {
+    validateDecimalPlaces(to.decimalAmount, to.token.decimals);
     const wallet = await ergoConnector.nautilus.getContext();
-    const tokenId = token.tokenId;
-    const amount = convertNumberToBigint(decimalAmount * 10 ** token.decimals);
+    const tokenId = to.token.tokenId;
+    const amount = convertNumberToBigint(
+      to.decimalAmount * 10 ** to.token.decimals
+    );
 
     const changeAddress = await wallet.get_change_address();
     const walletUtxos = await wallet.get_utxos();
     if (!walletUtxos) throw Error('No InputBox found in wallet.');
 
+    const address = to.toAddress;
+
     const unsignedTx = await this.generateUnsignedTx({
       changeAddress,
       walletUtxos,
-      toAddress,
+      toAddress: address,
       tokenId,
       amountString: amount.toString(),
     });

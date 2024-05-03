@@ -7,7 +7,7 @@ import {
   getFeeRatio,
   getMinimumMeaningfulSatoshi,
 } from './utils';
-import { BitcoinUtxo, UnsignedPsbtData } from '../../../types/BitcoinTxTypes';
+import { BitcoinUtxo, UnsignedPsbtData } from '@rosen-port/chains';
 import { SEGWIT_INPUT_WEIGHT_UNIT } from '../../../constants/BitcoinChainConstants';
 import { selectBitcoinUtxos } from '@rosen-bridge/bitcoin-utxo-selection';
 

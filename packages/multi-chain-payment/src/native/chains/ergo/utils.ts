@@ -3,7 +3,7 @@ import {
   ErgoBoxProxy,
   TokenInfo,
 } from '@rosen-bridge/ergo-box-selection';
-import { BoxInfo, CoveringBoxes } from '../../../types/ErgoChainTypes';
+import { BoxInfo, CoveringBoxes } from '@rosen-port/chains';
 import * as wasm from 'ergo-lib-wasm-nodejs';
 
 /**

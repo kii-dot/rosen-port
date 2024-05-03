@@ -23,20 +23,31 @@ Developer use this sdk to:
 
 ```javascript
 const rosenPortSDK = new RosenPortSDK();
-const chain = 'bitcoin';
-const amountInUSD = 10000; // $100.00
+const sourceChain = 'bitcoin';
+const destChain = 'ergo';
+const amount = 10000;
+const token = RosenChainToken.Ergo;
+const sourceAddress = 'test-source-address';
+const destAddress = 'test-dest-address';
 const fee = rosenPortSDK.calculateFee({
-  chain,
-  amountInUSD,
+  sourceChain,
+  destChain,
+  amount,
+  sourceAddress,
+  destAddress,
 });
 // fee : {
 //      total: number
 //      bridgeFee: number
 // }
 
-const txToBitcoinForSign = rosenPortSDK.sendTx({
-  chain,
-  amountInUSD,
+const txToBitcoinForSign = rosenPortSDK.bridge({
+  sourceChain,
+  destChain,
+  amount,
+  token,
+  sourceAddress,
+  destAddress,
   browserWallet: true,
 });
 // sendTxToBitcoin returns a tx bytes that user can sign
@@ -79,7 +90,7 @@ const containerData = rosenPortSDK.getContainer({
 // }
 
 const walletAddress = 'test-wallet-add';
-const walletTxs = rosenPortSDK.getTxs({
+const walletTxs = rosenPortSDK.getWalletTxs({
   walletAddress: walletAddress,
 });
 // Returns {

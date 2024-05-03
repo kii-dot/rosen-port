@@ -165,7 +165,8 @@ export const mainRouter = router({
   refund: publicProcedure
     .input(
       z.object({
-        txId: z.string(),
+        toRefundTxId: z.string(),
+        refundServiceFeeTxId: z.string()
       }),
     )
     .mutation(async ({ input }) => {
@@ -193,6 +194,42 @@ export const mainRouter = router({
             };
           }
         }
+      } catch (error) {
+        const txNotAvailableError = new TxNotAvailableError(input.txId, error);
+        logger.error(txNotAvailableError.errorMessage);
+        return {
+          error: txNotAvailableError.error,
+        };
+      }
+    }),
+  /*
+   * PUT - updateRefundTxAsSigned - api/trpc/main.updateRefundTxAsSigned
+   *
+   * Updates the status of a refund transaction to mark it as 'signed' by the user.
+   * This is done after user has signed the tx. The Tx is created and signed
+   * on the frontend.
+   *
+   * <input>
+   * refundServiceFeeTxId: string
+   * </input>
+   *
+   * <return>
+   * updatedTx: Tx
+   * </return>
+   */
+  updateRefundTxAsSigned: publicProcedure
+    .input(
+      z.object({
+        refundServiceFeeTxId: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const tx = await dbClient.refundTx.updateTxStatus(input.txId, TxStatus.unconfirmed);
+
+        return {
+          updatedTx: tx,
+        };
       } catch (error) {
         const txNotAvailableError = new TxNotAvailableError(input.txId, error);
         logger.error(txNotAvailableError.errorMessage);

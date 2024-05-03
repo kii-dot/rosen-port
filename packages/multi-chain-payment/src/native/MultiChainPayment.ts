@@ -1,6 +1,5 @@
-import { Networks } from '../constants';
 import { IChainTx } from '../types/ChainTxs';
-import { UnsignedPsbtData } from '../types/BitcoinTxTypes';
+import { UnsignedPsbtData, Networks } from '@rosen-port/chains';
 import { RosenChainToken } from '@rosen-bridge/tokens';
 import { ChainTxFactory } from './chains/ChainTxFactory';
 import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
@@ -27,11 +26,13 @@ interface IMultiChainPayment {
  * This class focuses on creating the send txs required for a certain
  * chain.
  */
-export class MultiChainPayment implements IMultiChainPayment {
-  async sendTo({
+@staticImplements<IMultiChainPayment>()
+export class MultiChainPayment {
+  static async sendTo({
     network,
     amount,
     tokenType,
+    sourceAddress,
     paymentAddress,
   }: {
     network: keyof typeof Networks;
@@ -41,10 +42,16 @@ export class MultiChainPayment implements IMultiChainPayment {
     paymentAddress: string;
   }): Promise<string | UnsignedPsbtData | UnsignedErgoTxProxy> {
     const chainTx: IChainTx = ChainTxFactory.getChainTx(network);
-    return await chainTx.generateUnsignedTransferTx(
-      tokenType,
-      amount,
-      paymentAddress
-    );
+    return await chainTx.generateUnsignedTransferTx({
+      token: tokenType,
+      decimalAmount: amount,
+      toAddress: paymentAddress,
+    });
   }
+}
+
+function staticImplements<T>() {
+  return <U extends T>(constructor: U) => {
+    constructor;
+  };
 }
