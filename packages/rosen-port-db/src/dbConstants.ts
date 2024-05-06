@@ -6,20 +6,58 @@ const DB_TYPE = {
   text: 'text',
   container_status: 'container_status',
   tx_status: 'tx_status',
+  refund_status: 'refund_status',
 };
 
+/**
+ * drafted -> Tx is created as a draft
+ * unconfirmed -> Payment Tx has been sent but has not been confirmed
+ * confirmed -> Payment Tx has confirmed reached wallet
+ * bridged -> The tx has been bridged, may or may not have been received
+ * sent -> The tx is sent out to the user (COMPLETION for Bridging)
+ * refunding -> The UNBRIDGED tx has been instantiated for refunding
+ * refund_completed -> The tx has been refunded and will not be bridged
+ * temporary_unavailable -> This enum is to be kept for cases where we need
+ *                          to alter enum values or for unknown cases
+ */
 export enum TxStatus {
   drafted = 'drafted',
   unconfirmed = 'unconfirmed',
   confirmed = 'confirmed',
   bridged = 'bridged',
   sent = 'sent',
-  refund_initiated = 'refund_initiated',
-  refund_in_process = 'refund_in_process',
-  refund_processed = 'refund_processed',
-  refund_verified = 'refund_verified',
+  refunding = 'refunding',
+  refund_completed = 'refund_completed',
+  temporary_unavailable = 'temporary_unavailable',
 }
 
+/**
+ * refund_initiated -> User initiated refund (ServiceFeeTxId entered)
+ * refund_service_fee_signed -> User has signed the tx for service fee payment
+ * refund_in_process -> service fee payment is confirmed, and refund cron job
+ *                      starts processing refund
+ * refund_processed -> refund of amount sent out, but not confirmed
+ * refund_completed -> refund is confirmed (COMPLETION)
+ */
+export enum RefundStatus {
+  refund_initiated = 'refund_initiated',
+  refund_service_fee_signed = 'refund_service_fee_signed',
+  refund_in_process = 'refund_in_process',
+  refund_processed = 'refund_processed',
+  refund_completed = 'refund_completed',
+}
+
+/**
+ * initiated -> The container has been created
+ * filling_in_progress -> The container has at least 1 transaction
+ * filled -> The container is filled and ready to be bridged
+ * bridged -> The container has been bridged, but may or may not
+ *            been received on dest chain
+ * fund_distribution_in_progress -> The txs in the bridged container
+ *                  is being distributed to the respective dest address
+ * funds_distributed -> The funds in the bridged container has been
+ *                  distributed. (COMPLETION)
+ */
 export enum ContainerStatus {
   initiated = 'initiated',
   filling_in_progress = 'filling_in_progress',
@@ -56,6 +94,38 @@ export class Token {
     this.name = name;
     this.tokenId = tokenId;
     this.nativeChain = nativeChain;
+  }
+}
+
+export class Refund {
+  id: string;
+  createdAt: string;
+  txIdToRefund: string;
+  serviceFeeTxId: string;
+  status: RefundStatus;
+  refundTxId: string;
+
+  constructor({
+    id,
+    createdAt,
+    txIdToRefund,
+    status,
+    refundTxId,
+    serviceFeeTxId,
+  }: {
+    id: string;
+    createdAt: string;
+    txIdToRefund: string;
+    status: RefundStatus;
+    refundTxId: string;
+    serviceFeeTxId: string;
+  }) {
+    this.id = id;
+    this.createdAt = createdAt;
+    this.txIdToRefund = txIdToRefund;
+    this.status = status;
+    this.refundTxId = refundTxId;
+    this.serviceFeeTxId = serviceFeeTxId;
   }
 }
 
@@ -107,7 +177,6 @@ export class Tx {
   sourceAddress: string;
   destAddress: string;
   txStatus: TxStatus;
-  refundTxId: string;
   distributedTxId: string;
   containerId: string;
 
@@ -119,7 +188,6 @@ export class Tx {
     sourceAddress,
     destAddress,
     txStatus,
-    refundTxId,
     distributedTxId,
     containerId,
   }: {
@@ -130,7 +198,6 @@ export class Tx {
     sourceAddress: string;
     destAddress: string;
     txStatus: TxStatus;
-    refundTxId: string;
     distributedTxId: string;
     containerId: string;
   }) {
@@ -141,7 +208,6 @@ export class Tx {
     this.sourceAddress = sourceAddress;
     this.destAddress = destAddress;
     this.txStatus = txStatus;
-    this.refundTxId = refundTxId;
     this.distributedTxId = distributedTxId;
     this.containerId = containerId;
   }
@@ -187,9 +253,19 @@ export class to {
       sourceAddress: data.source_address,
       destAddress: data.dest_address,
       txStatus: data.tx_status,
-      refundTxId: data.refund_tx_id,
       distributedTxId: data.distributed_tx_id,
       containerId: data.container_id,
+    });
+  }
+
+  static refund(data: any): Refund {
+    return new Refund({
+      id: data.id,
+      createdAt: data.created_at,
+      txIdToRefund: data.tx_id_to_refund,
+      refundTxId: data.refund_tx_id,
+      status: data.status,
+      serviceFeeTxId: data.service_fee_tx_id,
     });
   }
 
@@ -202,7 +278,6 @@ export class to {
       sourceAddress: data.source_address,
       destAddress: data.dest_address,
       txStatus: data.tx_status,
-      refundTxId: data.refund_tx_id,
       distributedTxId: data.distributed_tx_id,
       containerId: data.container_id,
     });
@@ -238,11 +313,11 @@ export const DbConstants = {
       },
       source_chain: {
         name: 'source_chain',
-        type: DB_TYPE.varchar,
+        type: DB_TYPE.text,
       },
       dest_chain: {
         name: 'dest_chain',
-        type: DB_TYPE.varchar,
+        type: DB_TYPE.text,
       },
       token_type: {
         name: 'token_type',
@@ -267,7 +342,7 @@ export const DbConstants = {
       },
       initiated_tx_id: {
         name: 'initiated_tx_id',
-        type: DB_TYPE.varchar,
+        type: DB_TYPE.text,
       },
       amount: {
         name: 'amount',
@@ -275,27 +350,52 @@ export const DbConstants = {
       },
       source_address: {
         name: 'source_address',
-        type: DB_TYPE.varchar,
+        type: DB_TYPE.text,
       },
       dest_address: {
         name: 'dest_address',
-        type: DB_TYPE.varchar,
+        type: DB_TYPE.text,
       },
       tx_status: {
         name: 'tx_status',
         type: DB_TYPE.tx_status,
       },
-      refund_tx_id: {
-        name: 'refund_tx_id',
-        type: DB_TYPE.varchar,
-      },
       distributed_tx_id: {
         name: 'distributed_tx_id',
-        type: DB_TYPE.varchar,
+        type: DB_TYPE.text,
       },
       container_id: {
         name: 'container_id',
         type: DB_TYPE.uuid,
+      },
+    },
+  },
+  refunds: {
+    name: 'refunds',
+    columns: {
+      id: {
+        name: 'id',
+        type: DB_TYPE.uuid,
+      },
+      created_at: {
+        name: 'created_at',
+        type: DB_TYPE.timestamp,
+      },
+      tx_id_to_refund: {
+        name: 'tx_id_to_refund',
+        type: DB_TYPE.text,
+      },
+      refund_tx_id: {
+        name: 'refund_tx_id',
+        type: DB_TYPE.text,
+      },
+      service_fee_tx_id: {
+        name: 'service_fee_tx_id',
+        type: DB_TYPE.text,
+      },
+      status: {
+        name: 'status',
+        type: DB_TYPE.refund_status,
       },
     },
   },

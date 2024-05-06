@@ -3,6 +3,8 @@ import {
   Container,
   ContainerStatus,
   DbConstants,
+  Refund,
+  RefundStatus,
   Tx,
   TxStatus,
   TxWithContainerInfo,
@@ -296,14 +298,123 @@ class TxDB extends DB {
   };
 }
 
+class RefundsDB extends DB {
+  constructor(supabaseClient: SupabaseClient) {
+    super();
+    this.supabaseClient = supabaseClient;
+  }
+
+  /**
+   * Creates a new refund row with status set to refund_initiated
+   * @param txIdToRefund
+   * @returns
+   */
+  createRefund = async (
+    txIdToRefund: string,
+    serviceFeeTxId: string
+  ): Promise<Refund> => {
+    const { data, error } = await this.insertData(DbConstants.refunds.name, {
+      [DbConstants.refunds.columns.tx_id_to_refund.name]: txIdToRefund,
+      [DbConstants.refunds.columns.service_fee_tx_id.name]: serviceFeeTxId,
+      [DbConstants.refunds.columns.status.name]: RefundStatus.refund_initiated,
+    });
+
+    if (data !== null) {
+      return to.refund(data[0]);
+    }
+
+    throw error;
+  };
+
+  /**
+   * Update service fee tx id
+   * @param txIdToRefund
+   * @param serviceFeeTxId
+   * @returns
+   */
+  updateServiceFeeTxId = async (
+    txIdToRefund: string,
+    serviceFeeTxId: string
+  ): Promise<Refund> => {
+    const { data, error } = await this.updateData(
+      DbConstants.refunds.name,
+      {
+        [DbConstants.refunds.columns.service_fee_tx_id.name]: serviceFeeTxId,
+      },
+      DbConstants.refunds.columns.tx_id_to_refund.name,
+      txIdToRefund
+    );
+
+    if (data !== null) {
+      return to.refund(data[0]);
+    }
+
+    throw error;
+  };
+
+  /**
+   * Update refund tx id
+   * @param txIdToRefund
+   * @param refundTxId
+   * @returns
+   */
+  updateRefundTxId = async (
+    txIdToRefund: string,
+    refundTxId: string
+  ): Promise<Refund> => {
+    const { data, error } = await this.updateData(
+      DbConstants.refunds.name,
+      {
+        [DbConstants.refunds.columns.refund_tx_id.name]: refundTxId,
+      },
+      DbConstants.refunds.columns.tx_id_to_refund.name,
+      txIdToRefund
+    );
+
+    if (data !== null) {
+      return to.refund(data[0]);
+    }
+
+    throw error;
+  };
+
+  /**
+   * Update refund tx status
+   * @param txIdToRefund
+   * @param txStatus
+   * @returns
+   */
+  updateRefundStatus = async (
+    txIdToRefund: string,
+    refundStatus: RefundStatus
+  ): Promise<Refund> => {
+    const { data, error } = await this.updateData(
+      DbConstants.refunds.name,
+      {
+        [DbConstants.refunds.columns.status.name]: refundStatus,
+      },
+      DbConstants.refunds.columns.tx_id_to_refund.name,
+      txIdToRefund
+    );
+
+    if (data !== null) {
+      return to.refund(data[0]);
+    }
+
+    throw error;
+  };
+}
+
 export class DBClient {
   supabaseClient: SupabaseClient;
   container: ContainerDB;
   tx: TxDB;
+  refund: RefundsDB;
 
   constructor(supabaseUrl: string, supabaseKey: string) {
     this.supabaseClient = createClient(supabaseUrl, supabaseKey);
     this.container = new ContainerDB(this.supabaseClient);
     this.tx = new TxDB(this.supabaseClient);
+    this.refund = new RefundsDB(this.supabaseClient);
   }
 }

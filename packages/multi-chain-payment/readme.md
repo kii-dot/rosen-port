@@ -6,7 +6,9 @@ It allows users to input a value (dollar or token amount) and it should create a
 ## Components
 
 ### UI
+
 This sdk provides a simple out of the box UI. A dropdown for the chain, and the currency (USD etc) amount or crypto amount as input and it will call the browser wallet, or provide a QR code for user.
+
 ```javascript
 import {MultiChainPaymentUI} from "multi-chain-payment"
 
@@ -29,31 +31,52 @@ export class WalletSign = () => {
 ```
 
 ### Code
-This sdk also provides a native code implementation for user to implement their own UI so that they can call our functions. Or for users to utilize the code to do backend payment. 
+
+This sdk also provides a native code implementation for user to implement their own UI so that they can call our functions. Or for users to utilize the code to do backend payment.
+
 ```javascript
-import {MultiChainPayment, MCPWallet} from "multi-chain-payment"
+import { MultiChainPayment, MCPWallet } from 'multi-chain-payment';
 const walletAddresses = {
-    bitcoin: "test-bitcoin-wallet-address",
-    ergo: "test-ergo-wallet-address",
-    cardano: "test-cardano-wallet-address"
-}
-const mcp = new MultiChainPayment({
-    paymentAddresses: walletAddresses
-})
+  bitcoin: 'test-bitcoin-wallet-address',
+  ergo: 'test-ergo-wallet-address',
+  cardano: 'test-cardano-wallet-address',
+};
 
-const chain = Chain.bitcoin
+const network = Network.bitcoin;
+const sourceAddress = 'test-bitcoin-source-address';
 
-const amountInUSD = 10000 // $100
+const amount = 10000;
+/**
+ * If tokenType is not defined, it will default to native token
+ */
 const paymentTxForBtc = mcp.createPaymentTo({
-    chain,
-    amountInUSD,
-    paymentAddress: walletAddresses.bitcoin // optional, if paymentAddress is not defined, it will default to address in paymentAddresses
-})
+  network,
+  amount,
+  sourceAddress,
+  paymentAddress: walletAddresses.bitcoin,
+});
+
+const paymentTxForBtc = mcp.createPaymentTo({
+  network,
+  sourceAddress,
+  paymentTo: [
+    {
+      paymentAddress,
+      amount,
+      tokenType,
+    },
+    {
+      paymentAddress,
+      amount,
+      tokenType,
+    },
+  ],
+});
 
 const btcWallet = MCPWallet.create({
-    chain,
-    mnemonic: "test-mnemonic"
-})
+  network,
+  mnemonic: 'test-mnemonic',
+});
 
-btcWallet.signAndSubmit(paymentTxForBtc)
+btcWallet.signAndSubmit(paymentTxForBtc);
 ```

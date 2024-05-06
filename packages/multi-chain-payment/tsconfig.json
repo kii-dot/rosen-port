@@ -2,7 +2,8 @@
   "extends": "../tsconfig.novite.json",
   "compilerOptions": {
     "outDir": "dist",
+    "experimentalDecorators": true,
     "rootDir": "./"
   },
-  "include": ["src"]
+  "include": ["src", "../chain/src/constants"]
 }
