@@ -1,19 +1,20 @@
 import { FundsTo, IChainTx } from '../../../types/ChainTxs';
 import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
 import { UnsignedPsbtData } from '@rosen-port/chains';
+import { NotImplementedException } from '@rosen-port/errors';
 
 export class BitcoinChainTx implements IChainTx {
   async connect(): Promise<boolean> {
     return true;
   }
 
-  async disperseFunds(
+  async generateDisperseUnsignedTxs(
     to: Array<FundsTo>
   ): Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>> {
-    throw new Error('Not Implemented');
+    throw new NotImplementedException();
   }
 
-  async generateUnsignedTransferTx(to: FundsTo): Promise<any> {
-    throw new Error('Not Implemented');
+  async generateTransferUnsignedTx(to: FundsTo): Promise<any> {
+    throw new NotImplementedException();
   }
 }

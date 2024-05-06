@@ -10,11 +10,22 @@ export interface FundsTo {
 
 export interface IChainTx {
   connect: () => Promise<boolean>;
-  generateUnsignedTransferTx: (
+
+  /**
+   * Generate UnsignedTx for a wallet to
+   * @param to
+   * @returns
+   */
+  generateTransferUnsignedTx: (
     to: FundsTo
   ) => Promise<string | UnsignedErgoTxProxy | UnsignedPsbtData>;
 
-  disperseFunds: (
+  /**
+   * Disperse funds to each of the FundsTo address
+   * @param to
+   * @returns
+   */
+  generateDisperseUnsignedTxs: (
     to: Array<FundsTo>
   ) => Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>>;
 }

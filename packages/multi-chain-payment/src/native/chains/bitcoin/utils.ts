@@ -1,12 +1,11 @@
 import Axios from 'axios';
 import { Psbt } from 'bitcoinjs-lib';
-import { BitcoinUtxo, EsploraAddress, EsploraUtxo } from '@rosen-port/chains';
 import {
-  CONFIRMATION_TARGET,
-  SEGWIT_INPUT_WEIGHT_UNIT,
-  SEGWIT_OUTPUT_WEIGHT_UNIT,
-  SUPPORTED_CHAINS,
-} from '../../../constants/BitcoinChainConstants';
+  BitcoinUtxo,
+  EsploraAddress,
+  EsploraUtxo,
+  BitcoinChainConstants,
+} from '@rosen-port/chains';
 import { encodeAddress } from '@rosen-bridge/address-codec';
 
 /**
@@ -25,7 +24,7 @@ export const generateOpReturnData = (
   bridgeFee: string
 ): string => {
   // parse toChain
-  const toChainCode = SUPPORTED_CHAINS.indexOf(toChain);
+  const toChainCode = BitcoinChainConstants.SUPPORTED_CHAINS.indexOf(toChain);
   if (toChainCode === -1) throw Error(`invalid toChain [${toChain}]`);
   const toChainHex = toChainCode.toString(16).padStart(2, '0');
 
@@ -86,7 +85,7 @@ export const getFeeRatio = async (): Promise<number> => {
   const esploraUrl = process.env.BITCOIN_ESPLORA_API;
   const FEE_ESTIMATES = `${esploraUrl}/api/fee-estimates`;
   const res = await Axios.get<Record<string, number>>(FEE_ESTIMATES);
-  return res.data[CONFIRMATION_TARGET];
+  return res.data[BitcoinChainConstants.CONFIRMATION_TARGET];
 };
 
 /**
@@ -97,7 +96,7 @@ export const getFeeRatio = async (): Promise<number> => {
 export const getMinimumMeaningfulSatoshi = (feeRatio: number): bigint => {
   return BigInt(
     Math.ceil(
-      (feeRatio * SEGWIT_INPUT_WEIGHT_UNIT) / 4 // estimate fee per weight and convert to virtual size
+      (feeRatio * BitcoinChainConstants.SEGWIT_INPUT_WEIGHT_UNIT) / 4 // estimate fee per weight and convert to virtual size
     )
   );
 };
@@ -119,8 +118,8 @@ export const estimateTxWeight = (
     2 + // all txs include 40W. P2WPKH txs need additional 2W
     44 + // OP_RETURN output base weight
     opReturnLength * 2 + // OP_RETURN output data counts as vSize, so weight = hexString length / 2 * 4
-    inputSize * SEGWIT_INPUT_WEIGHT_UNIT + // inputs weights
-    outputSize * SEGWIT_OUTPUT_WEIGHT_UNIT; // outputs weights
+    inputSize * BitcoinChainConstants.SEGWIT_INPUT_WEIGHT_UNIT + // inputs weights
+    outputSize * BitcoinChainConstants.SEGWIT_OUTPUT_WEIGHT_UNIT; // outputs weights
   return x;
 };
 

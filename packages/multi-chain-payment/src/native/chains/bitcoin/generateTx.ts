@@ -7,8 +7,11 @@ import {
   getFeeRatio,
   getMinimumMeaningfulSatoshi,
 } from './utils';
-import { BitcoinUtxo, UnsignedPsbtData } from '@rosen-port/chains';
-import { SEGWIT_INPUT_WEIGHT_UNIT } from '../../../constants/BitcoinChainConstants';
+import {
+  BitcoinUtxo,
+  UnsignedPsbtData,
+  BitcoinChainConstants,
+} from '@rosen-port/chains';
 import { selectBitcoinUtxos } from '@rosen-bridge/bitcoin-utxo-selection';
 
 /**
@@ -60,7 +63,7 @@ export const generateUnsignedTx = async (
     new Map<string, BitcoinUtxo | undefined>(),
     utxoIterator,
     minSatoshi,
-    SEGWIT_INPUT_WEIGHT_UNIT,
+    BitcoinChainConstants.SEGWIT_INPUT_WEIGHT_UNIT,
     estimatedTxWeight,
     feeRatio
   );

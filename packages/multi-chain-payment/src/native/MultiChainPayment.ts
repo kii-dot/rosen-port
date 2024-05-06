@@ -42,7 +42,7 @@ export class MultiChainPayment {
     paymentAddress: string;
   }): Promise<string | UnsignedPsbtData | UnsignedErgoTxProxy> {
     const chainTx: IChainTx = ChainTxFactory.getChainTx(network);
-    return await chainTx.generateUnsignedTransferTx({
+    return await chainTx.generateTransferUnsignedTx({
       token: tokenType,
       decimalAmount: amount,
       toAddress: paymentAddress,

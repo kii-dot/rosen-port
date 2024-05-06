@@ -18,6 +18,9 @@ import {
   CoveringBoxes,
 } from './types/ErgoChainTypes';
 import { Networks } from './constants';
+import { BitcoinChainConstants } from './constants/BitcoinChainConstants';
+import { ErgoChainConstants } from './constants/ErgoChainConstants';
+import { CardanoChainConstants } from './constants/CardanoChainConstants';
 
 export {
   // Bitcoin
@@ -38,4 +41,8 @@ export {
   CoveringBoxes,
   // Network
   Networks,
+  // Constants
+  BitcoinChainConstants,
+  ErgoChainConstants,
+  CardanoChainConstants,
 };

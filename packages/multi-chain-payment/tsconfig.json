@@ -5,5 +5,5 @@
     "experimentalDecorators": true,
     "rootDir": "./"
   },
-  "include": ["src"]
+  "include": ["src", "../chain/src/constants"]
 }

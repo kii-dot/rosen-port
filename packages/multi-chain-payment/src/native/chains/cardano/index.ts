@@ -13,27 +13,31 @@ import {
   AssetBalance,
   selectCardanoUtxos,
 } from '@rosen-bridge/cardano-utxo-selection';
-import { ADA_POLICY_ID, UnsignedPsbtData } from '@rosen-port/chains';
-import { feeAndMinBoxValue } from '../../../constants/CardanoChainConstants';
+import {
+  ADA_POLICY_ID,
+  UnsignedPsbtData,
+  CardanoChainConstants,
+} from '@rosen-port/chains';
 import {
   getUtxoAssets,
   subtractAssetBalance,
   sumAssetBalance,
 } from './assetCalculator';
 import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
+import { NotImplementedException } from '@rosen-port/errors';
 
 export class CardanoChainTx implements IChainTx {
   async connect(): Promise<boolean> {
     return true;
   }
 
-  async disperseFunds(
+  async generateDisperseUnsignedTxs(
     to: Array<FundsTo>
   ): Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>> {
-    throw new Error('Not Implemented');
+    throw new NotImplementedException();
   }
 
-  async generateUnsignedTransferTx(to: FundsTo): Promise<any> {
+  async generateTransferUnsignedTx(to: FundsTo): Promise<any> {
     validateDecimalPlaces(to.decimalAmount, to.token.decimals);
 
     // 1. Get Cardano wallet
@@ -111,7 +115,7 @@ export class CardanoChainTx implements IChainTx {
       walletUtxos.map(walletUtxoToCardanoUtxo)
     );
     // add required ADA estimation for tx fee and change box
-    requiredAssets.nativeToken += feeAndMinBoxValue;
+    requiredAssets.nativeToken += CardanoChainConstants.feeAndMinBoxValue;
     // get input boxes
     const inputs = await selectCardanoUtxos(
       requiredAssets,

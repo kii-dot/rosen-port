@@ -4,7 +4,6 @@ import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
 import { AssetBalance, ErgoBoxProxy } from '@rosen-bridge/ergo-box-selection';
 import ergoExplorerClientFactory from '@rosen-clients/ergo-explorer';
 import * as wasm from 'ergo-lib-wasm-nodejs';
-import { fee, minBoxValue } from '../../../constants/ErgoChainConstants';
 import {
   createChangeBox,
   getBoxAssets,
@@ -13,20 +12,21 @@ import {
   sumAssetBalance,
 } from './utils';
 import { unsignedTransactionToProxy } from './proxyTransformation';
-import { UnsignedPsbtData } from '@rosen-port/chains';
+import { UnsignedPsbtData, ErgoChainConstants } from '@rosen-port/chains';
+import { NotImplementedException } from '@rosen-port/errors';
 
 export class ErgoChainTx implements IChainTx {
   async connect(): Promise<boolean> {
     return await ergoConnector.nautilus.connect({ createErgoObject: false });
   }
 
-  async disperseFunds(
+  async generateDisperseUnsignedTxs(
     to: Array<FundsTo>
   ): Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>> {
-    throw new Error('Not Implemented');
+    throw new NotImplementedException();
   }
 
-  async generateUnsignedTransferTx(to: FundsTo): Promise<any> {
+  async generateTransferUnsignedTx(to: FundsTo): Promise<any> {
     validateDecimalPlaces(to.decimalAmount, to.token.decimals);
     const wallet = await ergoConnector.nautilus.getContext();
     const tokenId = to.token.tokenId;
@@ -69,7 +69,7 @@ export class ErgoChainTx implements IChainTx {
 
     // 1. Get the needed amount to transfer (in tokens etc)
     const lockAssets: AssetBalance = {
-      nativeToken: minBoxValue,
+      nativeToken: ErgoChainConstants.minBoxValue,
       tokens: [],
     };
     if (tokenId === 'erg') {
@@ -93,7 +93,7 @@ export class ErgoChainTx implements IChainTx {
 
     // 2. Calculate the total assets needed from wallet
     const requiredAssets = sumAssetBalance(lockAssets, {
-      nativeToken: minBoxValue,
+      nativeToken: ErgoChainConstants.minBoxValue,
       tokens: [],
     });
 
@@ -124,13 +124,15 @@ export class ErgoChainTx implements IChainTx {
 
     // 5. Calculate the difference between the total input assets and output assets
     const changeAssets = subtractAssetBalance(inputAssets, lockAssets);
-    changeAssets.nativeToken -= fee;
+    changeAssets.nativeToken -= ErgoChainConstants.fee;
 
     // 6. Create the change box
     const changeBox = createChangeBox(changeAddress, height, changeAssets);
 
     const feeBox = wasm.ErgoBoxCandidate.new_miner_fee_box(
-      wasm.BoxValue.from_i64(wasm.I64.from_str(fee.toString())),
+      wasm.BoxValue.from_i64(
+        wasm.I64.from_str(ErgoChainConstants.fee.toString())
+      ),
       height
     );
 
@@ -162,7 +164,8 @@ export class ErgoChainTx implements IChainTx {
     tokenId: string,
     amount: bigint
   ): wasm.ErgoBoxCandidate {
-    const boxErgValue = tokenId === 'erg' ? amount : minBoxValue;
+    const boxErgValue =
+      tokenId === 'erg' ? amount : ErgoChainConstants.minBoxValue;
     const outputBox = new wasm.ErgoBoxCandidateBuilder(
       wasm.BoxValue.from_i64(wasm.I64.from_str(boxErgValue.toString())),
       wasm.Contract.pay_to_address(wasm.Address.from_base58(toAddress)),
