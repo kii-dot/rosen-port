@@ -1,7 +1,7 @@
 import { publicProcedure, router } from '#/trpc/generic';
 import { dbClient } from '#/tools/db';
 import { z } from 'zod';
-import { ContainerStatus, TxStatus, Tx } from '@rosen-port/db';
+import { ContainerStatus, TxStatus, Tx, RefundStatus } from '@rosen-port/db';
 import logger from '#/tools/logger';
 import {
   ContainerNotAvailableError,
@@ -166,14 +166,14 @@ export const mainRouter = router({
     .input(
       z.object({
         toRefundTxId: z.string(),
-        refundServiceFeeTxId: z.string()
+        refundServiceFeeTxId: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
       try {
         // @todo kii the whole refund should be done here.
         // 1. Update data
-        const txData = await dbClient.tx.getTx(input.txId);
+        const txData = await dbClient.tx.getTx(input.toRefundTxId);
         if (txData !== null) {
           const tx = txData;
 
@@ -187,15 +187,16 @@ export const mainRouter = router({
           // 2. Verify data is correct
           //    a. Check explorer to see if there is a service fee paid
           //    b. Create refundTx table to check if the refundTx exists
-          const updatedTx = await dbClient.tx.updateTxStatus(input.txId, TxStatus.refund_initiated);
-          if (updatedTx !== null) {
+          const updatedTx = await dbClient.tx.updateTxStatus(input.toRefundTxId, TxStatus.refunding);
+          const createRefundTx = await dbClient.refund.createRefund(input.toRefundTxId, input.refundServiceFeeTxId);
+          if (updatedTx !== null && createRefundTx !== null) {
             return {
               updatedTx,
             };
           }
         }
       } catch (error) {
-        const txNotAvailableError = new TxNotAvailableError(input.txId, error);
+        const txNotAvailableError = new TxNotAvailableError(input.toRefundTxId, error);
         logger.error(txNotAvailableError.errorMessage);
         return {
           error: txNotAvailableError.error,
@@ -203,14 +204,14 @@ export const mainRouter = router({
       }
     }),
   /*
-   * PUT - updateRefundTxAsSigned - api/trpc/main.updateRefundTxAsSigned
+   * PUT - updateRefundServiceFeeTxAsSigned - api/trpc/main.updateRefundTxAsSigned
    *
    * Updates the status of a refund transaction to mark it as 'signed' by the user.
    * This is done after user has signed the tx. The Tx is created and signed
    * on the frontend.
    *
    * <input>
-   * refundServiceFeeTxId: string
+   * toRefundTxId: string
    * </input>
    *
    * <return>
@@ -220,18 +221,18 @@ export const mainRouter = router({
   updateRefundTxAsSigned: publicProcedure
     .input(
       z.object({
-        refundServiceFeeTxId: z.string(),
+        toRefundTxId: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
       try {
-        const tx = await dbClient.refundTx.updateTxStatus(input.txId, TxStatus.unconfirmed);
+        const tx = await dbClient.refund.updateRefundStatus(input.toRefundTxId, RefundStatus.refund_service_fee_signed);
 
         return {
           updatedTx: tx,
         };
       } catch (error) {
-        const txNotAvailableError = new TxNotAvailableError(input.txId, error);
+        const txNotAvailableError = new TxNotAvailableError(input.toRefundTxId, error);
         logger.error(txNotAvailableError.errorMessage);
         return {
           error: txNotAvailableError.error,

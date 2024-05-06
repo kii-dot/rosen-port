@@ -2,9 +2,11 @@ import { DBClient } from './dbClient';
 import {
   ContainerStatus,
   TxStatus,
+  RefundStatus,
   Container,
   Token,
   Tx,
+  Refund,
   TxWithContainerInfo,
   to,
   DbConstants,
@@ -14,8 +16,10 @@ export { DBClient as RosenPortDBClient };
 export {
   ContainerStatus,
   TxStatus,
+  RefundStatus,
   Container,
   Tx,
+  Refund,
   Token,
   TxWithContainerInfo,
   to,
