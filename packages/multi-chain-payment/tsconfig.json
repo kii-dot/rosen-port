@@ -1,9 +1,14 @@
 {
   "extends": "../tsconfig.novite.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "outDir": "dist",
     "experimentalDecorators": true,
     "rootDir": "./"
   },
-  "include": ["src", "../chain/src/constants"]
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  },
+  "include": ["src"]
 }

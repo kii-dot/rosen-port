@@ -60,8 +60,8 @@ class ContainerDB extends DB {
         bridged_time,
         source_chain,
         dest_chain,
-        token_type (id, name, token_id, native_chain),
         status,
+        token_type ("*")
         `;
 
   constructor(supabaseClient: SupabaseClient) {
@@ -70,12 +70,32 @@ class ContainerDB extends DB {
   }
 
   getContainers = async (
-    limit: number,
-    index: number
+    limit: number = 100,
+    index: number = 0
   ): Promise<Container[]> => {
     const { data, error } = await this.supabaseClient
       .from(DbConstants.containers.name)
       .select(this.getContainerQuery)
+      .range(index, index + limit);
+
+    if (data !== null) {
+      return data.map((result) => {
+        return to.container(result);
+      });
+    }
+
+    throw error;
+  };
+
+  getContainersViaStatus = async (
+    status: ContainerStatus,
+    limit: number = 100,
+    index: number = 0
+  ): Promise<Container[]> => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.containers.name)
+      .select(this.getContainerQuery)
+      .eq(DbConstants.containers.columns.status.name, status)
       .range(index, index + limit);
 
     if (data !== null) {
@@ -185,7 +205,6 @@ class TxDB extends DB {
         source_address,
         dest_address,
         tx_status,
-        refund_tx_id,
         distributed_tx_id,
         containers (
           status,
@@ -221,7 +240,6 @@ class TxDB extends DB {
         source_address,
         dest_address,
         tx_status,
-        refund_tx_id,
         distributed_tx_id,
         container_id
       `

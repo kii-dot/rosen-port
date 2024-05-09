@@ -282,14 +282,7 @@ export class to {
       containerId: data.container_id,
     });
 
-    const tokenType = new Token({
-      id: data.container.id,
-      name: data.container.name,
-      tokenId: data.container.token_id,
-      nativeChain: data.container.native_chain,
-    });
-
-    const container = this.container(data.container);
+    const container = this.container(data.containers);
 
     return new TxWithContainerInfo({ tx, container: container });
   }

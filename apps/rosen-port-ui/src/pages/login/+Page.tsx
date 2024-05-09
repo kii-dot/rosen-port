@@ -21,17 +21,15 @@ const LoginPage: React.FC = () => {
     // 2. Send CreateTx to Trpc Create
     // 3. SignAndSubmit then send UpdateTx to confirm
     const sendToQuery = {
-      network: "bitcoin",
+      network: 'bitcoin',
       amount: 12345,
-      tokenType: "erg",
-      sourceAddress: "123",
-    }
+      tokenType: 'erg',
+      sourceAddress: '123',
+    };
 
-    var tx = RosenPortSDK.sendTo(
-      sendToQuery
-    )
+    var tx = RosenPortSDK.sendTo(sendToQuery);
 
-    var txId = tx.txId
+    var txId = tx.txId;
 
     const queryInput = {
       txId,
@@ -47,51 +45,48 @@ const LoginPage: React.FC = () => {
     console.log(queryInput);
     const createResp = await trpc.main.create.mutate(queryInput);
 
-    console.log(createResp)
+    console.log(createResp);
 
     wallet.signAndSubmit(tx).then(async () => {
-      const updateResp = await trpc.main.updateTxAsSigned.mutate({txId: txId})
-      }
-    )
+      const updateResp = await trpc.main.updateTxAsSigned.mutate({ txId: txId });
+    });
   };
 
   // @todo kii move these to its own class
-  const handleRefund = async() => {
+  const handleRefund = async () => {
     // 1. Create RefundServiceFeeTx using RosenPortSDK
     const refundServiceFeeQuery = {
-      network: "bitcoin",
-      sourceAddress: "123",
-    }
+      network: 'bitcoin',
+      sourceAddress: '123',
+    };
 
-    var tx = RosenPortSDK.refundServiceTx(
-      refundServiceFeeQuery
-    )
+    var tx = RosenPortSDK.refundServiceTx(refundServiceFeeQuery);
 
-    var refundServiceFeeTxId = tx.txId
-    var toRefundTxId = ""
-    
+    var refundServiceFeeTxId = tx.txId;
+    var toRefundTxId = '';
+
     const queryInput = {
       refundServiceFeeTxId,
-      toRefundTxId
+      toRefundTxId,
     };
 
     // 2. Send refundTx to Trpc refund
-    const refundResp = await trpc.main.refund.mutate(queryInput)
+    const refundResp = await trpc.main.refund.mutate(queryInput);
 
     // 3. Check if refund is possible
     if (refundResp.updatedTx === toRefundTxId) {
       // Refundable
       // 4. SignAndSubmit then send UpdateTx to confirm
       wallet.signAndSubmit(tx).then(async () => {
-        const updateResp = await trpc.main.refundTxSent.mutate({refundServiceFeeTxId})
-      })
+        const updateResp = await trpc.main.refundTxSent.mutate({ refundServiceFeeTxId });
+      });
     } else {
       // Post that the refund is not available due to Error message
       // 1. Already Refunded
       // 2. Tx is not confirmed
       // 3. Tx is already bridged.
     }
-  }
+  };
 
   const renderHeading = () => {
     return (

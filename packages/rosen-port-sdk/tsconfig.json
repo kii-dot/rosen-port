@@ -4,5 +4,9 @@
     "outDir": "dist",
     "rootDir": "./"
   },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  },
   "include": ["src"]
 }

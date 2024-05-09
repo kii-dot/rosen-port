@@ -1,23 +1,28 @@
-import { IChainTx } from '../types/ChainTxs';
+import { IChainTx, FundsTo } from '../types/ChainTxs';
 import { UnsignedPsbtData, Networks } from '@rosen-port/chains';
-import { RosenChainToken } from '@rosen-bridge/tokens';
 import { ChainTxFactory } from './chains/ChainTxFactory';
-import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
+import { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 
 interface IMultiChainPayment {
   sendTo: ({
     network,
-    amount,
-    tokenType,
     sourceAddress,
-    paymentAddress,
+    to,
   }: {
     network: keyof typeof Networks;
-    amount: number;
-    tokenType: RosenChainToken;
     sourceAddress: string;
-    paymentAddress: string;
-  }) => Promise<string | UnsignedPsbtData | UnsignedErgoTxProxy>;
+    to: FundsTo;
+  }) => Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction>;
+
+  disperse: ({
+    network,
+    to,
+    sourceAddress,
+  }: {
+    network: keyof typeof Networks;
+    sourceAddress: string;
+    to: Array<FundsTo>;
+  }) => Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction>;
 }
 
 /**
@@ -30,23 +35,28 @@ interface IMultiChainPayment {
 export class MultiChainPayment {
   static async sendTo({
     network,
-    amount,
-    tokenType,
     sourceAddress,
-    paymentAddress,
+    to,
   }: {
     network: keyof typeof Networks;
-    amount: number;
-    tokenType: RosenChainToken;
     sourceAddress: string;
-    paymentAddress: string;
-  }): Promise<string | UnsignedPsbtData | UnsignedErgoTxProxy> {
-    const chainTx: IChainTx = ChainTxFactory.getChainTx(network);
-    return await chainTx.generateTransferUnsignedTx({
-      token: tokenType,
-      decimalAmount: amount,
-      toAddress: paymentAddress,
-    });
+    to: FundsTo;
+  }): Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction> {
+    const chainTx: IChainTx = ChainTxFactory.getChainTx(sourceAddress, network);
+    return await chainTx.generateTransferUnsignedTx(to);
+  }
+
+  static async disperse({
+    network,
+    sourceAddress,
+    to,
+  }: {
+    network: keyof typeof Networks;
+    sourceAddress: string;
+    to: Array<FundsTo>;
+  }): Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction> {
+    const chainTx: IChainTx = ChainTxFactory.getChainTx(sourceAddress, network);
+    return await chainTx.generateDisperseUnsignedTxs(to);
   }
 }
 

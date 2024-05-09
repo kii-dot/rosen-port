@@ -16,7 +16,7 @@
   "scripts": {
     "prettify": "prettier --write . --ignore-path .gitignore",
     "lint": "eslint --fix . && npm run prettify",
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc && tsc-alias",
     "start": "npm run build && node dist/playground.js",
     "type-check": "tsc --noEmit",
     "test": "jest"

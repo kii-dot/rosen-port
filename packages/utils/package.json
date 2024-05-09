@@ -8,7 +8,7 @@
   "scripts": {
     "prettify": "prettier --write . --ignore-path .gitignore",
     "lint": "eslint --fix . && npm run prettify",
-    "build": "tsc --build",
+    "build": "tsc && tsc-alias",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
