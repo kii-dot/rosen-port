@@ -1,6 +1,6 @@
 import { FundsTo, IChainTx } from '../../../types/ChainTxs';
 import { UnsignedPsbtData } from '@rosen-port/chains';
-import { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import { NotImplementedException } from '@rosen-port/errors';
 
 export class CardanoChainTx implements IChainTx {
@@ -10,7 +10,7 @@ export class CardanoChainTx implements IChainTx {
 
   generateDisperseUnsignedTxs: (
     to: FundsTo[]
-  ) => Promise<string | ErgoUnsignedTransaction | UnsignedPsbtData>;
+  ) => Promise<string | EIP12UnsignedTransaction | UnsignedPsbtData>;
 
   async generateTransferUnsignedTx(to: FundsTo): Promise<any> {
     throw new NotImplementedException();

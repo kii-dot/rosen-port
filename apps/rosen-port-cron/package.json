@@ -25,6 +25,7 @@
   "dependencies": {
     "@rosen-port/chains": "^0.1.0",
     "@rosen-port/db": "^0.1.0",
+    "@rosen-port/ergo-explorer-node": "^0.1.0",
     "@rosen-port/errors": "^0.1.0",
     "@rosen-port/multi-chain-payment": "^0.1.0",
     "dotenv": "^16.3.1",

@@ -8,8 +8,15 @@ import {
   Tx,
   TxStatus,
   TxWithContainerInfo,
+  Wallet,
   to,
 } from './dbConstants';
+
+enum Chain {
+  ergo = 0,
+  cardano = 1,
+  bitcoin = 2,
+}
 
 abstract class DB {
   supabaseClient!: SupabaseClient;
@@ -50,6 +57,65 @@ abstract class DB {
       .select();
 
     return { data, error };
+  };
+}
+
+class WalletsDB extends DB {
+  getWalletQuery: string = `
+        id,
+        wallet_address,
+        chain (name)
+        `;
+  constructor(supabaseClient: SupabaseClient) {
+    super();
+    this.supabaseClient = supabaseClient;
+  }
+
+  getWallets = async (): Promise<Wallet[]> => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.wallet.name)
+      .select(this.getWalletQuery);
+
+    if (data !== null) {
+      return data.map((result) => {
+        return to.wallet(result);
+      });
+    }
+
+    throw error;
+  };
+
+  getWallet = async (chain: string): Promise<Wallet> => {
+    var chainId = 0;
+    switch (chain) {
+      case 'ergo':
+        chainId = Chain.ergo;
+        break;
+      case 'cardano':
+        chainId = Chain.cardano;
+        break;
+      case 'bitcoin':
+        chainId = Chain.bitcoin;
+        break;
+      default:
+        chainId = 0;
+        break;
+    }
+
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.wallet.name)
+      .select(this.getWalletQuery)
+      .eq(DbConstants.wallet.columns.chain.name, chainId);
+
+    console.log('hello');
+    console.log(data);
+    console.log(chainId);
+
+    if (data !== null) {
+      return to.wallet(data[0]);
+    }
+
+    throw error;
   };
 }
 
@@ -428,11 +494,13 @@ export class DBClient {
   container: ContainerDB;
   tx: TxDB;
   refund: RefundsDB;
+  wallet: WalletsDB;
 
   constructor(supabaseUrl: string, supabaseKey: string) {
     this.supabaseClient = createClient(supabaseUrl, supabaseKey);
     this.container = new ContainerDB(this.supabaseClient);
     this.tx = new TxDB(this.supabaseClient);
     this.refund = new RefundsDB(this.supabaseClient);
+    this.wallet = new WalletsDB(this.supabaseClient);
   }
 }

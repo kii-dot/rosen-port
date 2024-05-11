@@ -1,7 +1,7 @@
 import { FundsTo, IChainTx } from '../../../types/ChainTxs';
 import { UnsignedPsbtData } from '@rosen-port/chains';
 import { NotImplementedException } from '@rosen-port/errors';
-import { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 
 export class BitcoinChainTx implements IChainTx {
   async connect(): Promise<boolean> {
@@ -10,7 +10,7 @@ export class BitcoinChainTx implements IChainTx {
 
   generateDisperseUnsignedTxs: (
     to: FundsTo[]
-  ) => Promise<string | ErgoUnsignedTransaction | UnsignedPsbtData>;
+  ) => Promise<string | EIP12UnsignedTransaction | UnsignedPsbtData>;
 
   async generateTransferUnsignedTx(to: FundsTo): Promise<any> {
     throw new NotImplementedException();

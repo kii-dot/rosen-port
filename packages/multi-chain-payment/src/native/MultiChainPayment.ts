@@ -1,7 +1,7 @@
 import { IChainTx, FundsTo } from '../types/ChainTxs';
 import { UnsignedPsbtData, Networks } from '@rosen-port/chains';
 import { ChainTxFactory } from './chains/ChainTxFactory';
-import { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 
 interface IMultiChainPayment {
   sendTo: ({
@@ -12,7 +12,7 @@ interface IMultiChainPayment {
     network: keyof typeof Networks;
     sourceAddress: string;
     to: FundsTo;
-  }) => Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction>;
+  }) => Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction>;
 
   disperse: ({
     network,
@@ -22,7 +22,7 @@ interface IMultiChainPayment {
     network: keyof typeof Networks;
     sourceAddress: string;
     to: Array<FundsTo>;
-  }) => Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction>;
+  }) => Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction>;
 }
 
 /**
@@ -41,7 +41,7 @@ export class MultiChainPayment {
     network: keyof typeof Networks;
     sourceAddress: string;
     to: FundsTo;
-  }): Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction> {
+  }): Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction> {
     const chainTx: IChainTx = ChainTxFactory.getChainTx(sourceAddress, network);
     return await chainTx.generateTransferUnsignedTx(to);
   }
@@ -54,7 +54,7 @@ export class MultiChainPayment {
     network: keyof typeof Networks;
     sourceAddress: string;
     to: Array<FundsTo>;
-  }): Promise<string | UnsignedPsbtData | ErgoUnsignedTransaction> {
+  }): Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction> {
     const chainTx: IChainTx = ChainTxFactory.getChainTx(sourceAddress, network);
     return await chainTx.generateDisperseUnsignedTxs(to);
   }

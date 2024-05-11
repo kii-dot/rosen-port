@@ -13,12 +13,7 @@ export const dbClient = new RosenPortDBClient(
 
 describe('dbclient', () => {
   it('should get boxes', async () => {
-    const userTxs = await dbClient.tx.getUserTxs(
-      '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops'
-    );
-    const containers = await dbClient.container.getContainers();
-    containers.forEach(async (container) => {
-      const txs = await dbClient.tx.getContainerTxs(container.id);
-    });
+    const wallet = await dbClient.wallet.getWallet('ergo');
+    console.log(wallet);
   });
 });

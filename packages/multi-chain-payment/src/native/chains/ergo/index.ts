@@ -4,6 +4,7 @@ import { EipWalletApi } from '@rosen-ui/wallet-api';
 import { ErgoBoxProxy } from '@rosen-bridge/ergo-box-selection';
 import { UnsignedPsbtData, ErgoChainConstants } from '@rosen-port/chains';
 import { ErgoExplorerAPI, ErgoNodeAPI } from '@rosen-port/ergo-explorer-node';
+import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import {
   Amount,
   Box,
@@ -87,7 +88,7 @@ export class ErgoChainTx implements IChainTx {
   async generateDisperseUnsignedTxs(
     to: Array<FundsTo>,
     useWallet: boolean = false
-  ): Promise<string | ErgoUnsignedTransaction | UnsignedPsbtData> {
+  ): Promise<string | EIP12UnsignedTransaction | UnsignedPsbtData> {
     const inputs = await this.getInputs(useWallet);
     const height = await this.getHeight();
     const changeAddress: string = await this.changeAddress();
@@ -102,7 +103,8 @@ export class ErgoChainTx implements IChainTx {
       .to(outputs)
       .sendChangeTo(changeAddress)
       .payMinFee()
-      .build();
+      .build()
+      .toEIP12Object();
   }
 
   async generateTransferUnsignedTx(

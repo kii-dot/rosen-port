@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { BlockHeader } from './types/node.types';
 import { ErgoNetwork, ErgoNodeUrl, IErgoNodeUrl } from './constant';
+import { SignedTransaction } from '@fleet-sdk/common';
 
 export class ErgoNodeAPI {
   private readonly baseUrl: IErgoNodeUrl;
@@ -20,12 +21,12 @@ export class ErgoNodeAPI {
   }
 
   public async submitTransaction(
-    transaction: any
-  ): Promise<{ id: string } | string | undefined> {
+    transaction: SignedTransaction
+  ): Promise<string | undefined> {
     const url = `${this.getUrl()}/transactions`;
     try {
       const response = await axios.post(url, transaction);
-      return { id: response.data };
+      return response.data;
     } catch (error) {
       if ((error as any).response && (error as any).response.data) {
         const info = (error as any).response.data;

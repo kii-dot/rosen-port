@@ -2,17 +2,27 @@ import * as cron from 'node-cron';
 import { dbClient } from './tools/db';
 import { ContainerStatus, TxStatus } from '@rosen-port/db';
 import { TokenMap } from '@rosen-bridge/tokens';
-import { MultiChainPayment, FundsTo } from '@rosen-port/multi-chain-payment';
+import {
+  MultiChainPayment,
+  FundsTo,
+  MCPWallet,
+} from '@rosen-port/multi-chain-payment';
 import { Networks } from '@rosen-port/chains';
 import tokens from '../tokens.json' assert { type: 'json' };
+import { MNEMONIC } from './constants/mnemonicConstants';
+
+/**
+ * Cron Job needed:
+ * 1. Disperse of funds
+ * 2. Bridging of funds
+ * 3. Checking of Bridged funds
+ * 4. Refunds of unbridged funds
+ */
 
 /**
  * Change this to 30 minutes
  */
-const rosenPortWalletAddress =
-  '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops';
-
-cron.schedule('*/1 * * * * *', async () => {
+cron.schedule('*/30 * * * * *', async () => {
   console.log('Start cron');
   const tokenMap = new TokenMap(tokens);
   // Run a runner where it Bridge
@@ -32,6 +42,10 @@ cron.schedule('*/1 * * * * *', async () => {
       const rosenChainTokens = tokenMap.search(container.destChain, {
         tokenId: token,
       });
+      const rosenPortWalletAddress = await dbClient.wallet.getWallet(
+        container.destChain
+      );
+      console.log(rosenPortWalletAddress.walletAddress);
       txs.forEach(async (tx) => {
         if (tx.txStatus === TxStatus.bridged) {
           const fundsTo = {
@@ -45,13 +59,26 @@ cron.schedule('*/1 * * * * *', async () => {
       });
 
       console.log(container.destChain);
+
+      // @ts-ignore
+      const network = Networks[container.destChain];
       const unsignedTx = await MultiChainPayment.disperse({
-        // @ts-ignore
-        network: Networks[container.destChain],
-        sourceAddress: rosenPortWalletAddress,
+        network,
+        sourceAddress: rosenPortWalletAddress.walletAddress,
         to,
       });
       console.log(unsignedTx);
+
+      // create Wallet
+      // @ts-ignore
+      const walletMnemonic = MNEMONIC[container.destChain];
+      const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
+
+      // Sign and send txs
+      const tx = await wallet.signAndSubmit(unsignedTx);
+      console.log(tx);
+
+      // Update DB to sent and tx id
     });
   } catch (error) {
     console.log(error);

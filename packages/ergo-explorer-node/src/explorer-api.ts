@@ -3,7 +3,6 @@ import {
   BlockHeadersResponse,
   Box,
   NetworkStats,
-  ResponseData,
 } from './types/explorer.types';
 import { ErgoExplorerUrl, ErgoNetwork, IErgoExplorerUrl } from './constant';
 

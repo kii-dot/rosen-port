@@ -8,6 +8,7 @@ import {
   ErgoNetwork,
 } from './constant';
 import { Box, Token, Registers } from './types/explorer.types';
+import { BackendWallet as Wallet } from './wallet';
 
 export {
   ErgoExplorerAPI,
@@ -20,4 +21,5 @@ export {
   Box,
   Token,
   Registers,
+  Wallet,
 };
