@@ -3,6 +3,7 @@ const DB_TYPE = {
   varchar: 'varchar',
   timestamp: 'timestampz',
   bool: 'bool',
+  int8: 'int8',
   text: 'text',
   container_status: 'container_status',
   tx_status: 'tx_status',
@@ -63,6 +64,7 @@ export enum ContainerStatus {
   filling_in_progress = 'filling_in_progress',
   filled = 'filled',
   bridged = 'bridged',
+  bridging = 'bridging',
   fund_distribution_in_progress = 'fund_distribution_in_progress',
   funds_distributed = 'fund_distributed',
 }
@@ -126,6 +128,22 @@ export class Refund {
     this.status = status;
     this.refundTxId = refundTxId;
     this.serviceFeeTxId = serviceFeeTxId;
+  }
+}
+
+export class Wallet {
+  chain: string;
+  walletAddress: string;
+
+  constructor({
+    chain,
+    walletAddress,
+  }: {
+    chain: string;
+    walletAddress: string;
+  }) {
+    this.chain = chain;
+    this.walletAddress = walletAddress;
   }
 }
 
@@ -282,16 +300,17 @@ export class to {
       containerId: data.container_id,
     });
 
-    const tokenType = new Token({
-      id: data.container.id,
-      name: data.container.name,
-      tokenId: data.container.token_id,
-      nativeChain: data.container.native_chain,
-    });
-
-    const container = this.container(data.container);
+    const container = this.container(data.containers);
 
     return new TxWithContainerInfo({ tx, container: container });
+  }
+
+  static wallet(data: any): Wallet {
+    const wallet = new Wallet({
+      chain: data.chain.name,
+      walletAddress: data.wallet_address,
+    });
+    return wallet;
   }
 }
 
@@ -396,6 +415,23 @@ export const DbConstants = {
       status: {
         name: 'status',
         type: DB_TYPE.refund_status,
+      },
+    },
+  },
+  wallet: {
+    name: 'rosen_port_wallets',
+    columns: {
+      id: {
+        name: 'id',
+        type: DB_TYPE.uuid,
+      },
+      chain: {
+        name: 'chain',
+        type: DB_TYPE.int8,
+      },
+      walletAddress: {
+        name: 'wallet_address',
+        type: DB_TYPE.text,
       },
     },
   },

@@ -1,6 +1,12 @@
+import { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import { ChainNotImplementedError } from '../error/ChainTxErrors';
 import { UnsignedPsbtData, Networks } from '@rosen-port/chains';
 import { NotImplementedException } from '@rosen-port/errors';
+import {
+  Wallet as ErgoBackendWallet,
+  ErgoNodeAPI,
+} from '@rosen-port/ergo-explorer-node';
 
 export class MCPWallet {
   static create({
@@ -24,24 +30,56 @@ export class MCPWallet {
 }
 
 interface IWallet {
-  signAndSubmit: (unsignedTx: string | UnsignedPsbtData) => Promise<string>;
+  signAndSubmit: (
+    unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
+  ) => Promise<string | undefined>;
 }
 
 class ErgoWallet implements IWallet {
-  constructor(mnemonic: string) {}
+  wallet: ErgoBackendWallet;
+  nodeApi: ErgoNodeAPI;
+  walletIndex: number;
+  constructor(mnemonic: string) {
+    this.wallet = new ErgoBackendWallet(mnemonic);
+    this.nodeApi = new ErgoNodeAPI();
+    // @todo kii make sure this is fixed, it should be in constructor?
+    this.walletIndex = 0;
+  }
 
-  async signAndSubmit(unsignedTx: string | UnsignedPsbtData): Promise<string> {
-    // const signedTx = await wallet.sign_tx(unsignedTx);
-    // const result = await wallet.submit_tx(signedTx);
-    // return result;
-    throw new NotImplementedException();
+  async signAndSubmit(
+    unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
+  ): Promise<string | undefined> {
+    const currentHeight = await this.nodeApi.getHeight();
+    if (!currentHeight) {
+      throw new Error('issue current height');
+    }
+
+    const blockHeaders = (
+      await this.nodeApi.getBlockByHeight(currentHeight - 9, currentHeight)
+    ).reverse();
+
+    if (blockHeaders.length === 0) {
+      throw new Error('issue getting block headers');
+    }
+
+    const signedTx = await this.wallet.signTransaction(
+      // @ts-ignore
+      unsignedTx,
+      blockHeaders,
+      this.walletIndex
+    );
+
+    const txId = this.nodeApi.submitTransaction(signedTx);
+    return txId;
   }
 }
 
 class BitcoinWallet implements IWallet {
   constructor(mnemonic: string) {}
 
-  async signAndSubmit(unsignedTx: string | UnsignedPsbtData): Promise<string> {
+  async signAndSubmit(
+    unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
+  ): Promise<string | undefined> {
     // const result: string = await new Promise((resolve, reject) => {
     //   getXdefiWallet().api.signTransaction({
     //     payload: {
@@ -78,7 +116,9 @@ class BitcoinWallet implements IWallet {
 
 class CardanoWallet implements IWallet {
   constructor(mnemonic: string) {}
-  async signAndSubmit(unsignedTx: string | UnsignedPsbtData): Promise<string> {
+  async signAndSubmit(
+    unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
+  ): Promise<string | undefined> {
     // const signedTxHex = await setTxWitnessSet(
     //   unsignedTx,
     //   await wallet.signTx(unsignedTx, false)

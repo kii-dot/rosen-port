@@ -1,4 +1,4 @@
-import { Networks } from './';
+import { Networks } from '.';
 
 const ETHEREUM_CHAIN = 'ethereum';
 export const BitcoinChainConstants = {

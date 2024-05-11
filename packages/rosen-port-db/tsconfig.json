@@ -2,7 +2,13 @@
   "extends": "../tsconfig.novite.json",
   "compilerOptions": {
     "outDir": "dist",
+    "experimentalDecorators": true,
     "rootDir": "./"
   },
-  "include": ["src"]
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts"]
 }

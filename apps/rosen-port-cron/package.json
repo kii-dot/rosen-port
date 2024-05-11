@@ -1,7 +1,7 @@
 {
-  "name": "rosen-port-backend",
+  "name": "rosen-port-cron",
   "version": "0.1.0",
-  "description": "Rosen Port backend",
+  "description": "Rosen Port Cron",
   "keywords": [
     "rosen-port",
     "backend"
@@ -17,13 +17,17 @@
   "scripts": {
     "prettify": "prettier --write . --ignore-path .gitignore",
     "lint": "eslint --fix . && npm run prettify",
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc && tsc-alias",
     "start": "node --experimental-specifier-resolution=node dist/src/index.js",
     "type-check": "tsc --noEmit",
     "test": "jest"
   },
   "dependencies": {
+    "@rosen-port/chains": "^0.1.0",
     "@rosen-port/db": "^0.1.0",
+    "@rosen-port/ergo-explorer-node": "^0.1.0",
+    "@rosen-port/errors": "^0.1.0",
+    "@rosen-port/multi-chain-payment": "^0.1.0",
     "dotenv": "^16.3.1",
     "node-cron": "^3.0.3"
   },

@@ -45,6 +45,10 @@ export class RosenPortSDK implements IRosenPortSDK {
     throw new NotImplementedException();
   }
 
+  /**
+   *
+   * @param txId TransactionId of the
+   */
   refundTx(txId: string): Promise<any> {
     throw new NotImplementedException();
   }

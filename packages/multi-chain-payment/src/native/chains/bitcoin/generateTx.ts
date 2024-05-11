@@ -1,5 +1,3 @@
-'use server';
-
 import { Psbt, address, payments } from 'bitcoinjs-lib';
 import {
   estimateTxWeight,

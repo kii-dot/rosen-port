@@ -1,6 +1,6 @@
+import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import { RosenChainToken } from '@rosen-bridge/tokens';
 import { UnsignedPsbtData } from '@rosen-port/chains';
-import { UnsignedErgoTxProxy } from '@rosen-ui/wallet-api';
 
 export interface FundsTo {
   token: RosenChainToken;
@@ -18,7 +18,7 @@ export interface IChainTx {
    */
   generateTransferUnsignedTx: (
     to: FundsTo
-  ) => Promise<string | UnsignedErgoTxProxy | UnsignedPsbtData>;
+  ) => Promise<string | EIP12UnsignedTransaction | UnsignedPsbtData>;
 
   /**
    * Disperse funds to each of the FundsTo address
@@ -27,5 +27,5 @@ export interface IChainTx {
    */
   generateDisperseUnsignedTxs: (
     to: Array<FundsTo>
-  ) => Promise<Array<string | UnsignedErgoTxProxy | UnsignedPsbtData>>;
+  ) => Promise<string | EIP12UnsignedTransaction | UnsignedPsbtData>;
 }

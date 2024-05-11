@@ -6,11 +6,6 @@ export interface MultiChainPaymentUIProps {
 }
 
 // eslint-disable-next-line react/prop-types
-const MultiChainPaymentUI = ({children}: MultiChainPaymentUIProps) => {
-
-  return (
-    <div>
-      {children}
-    </div>
-  );
-}
+const MultiChainPaymentUI = ({ children }: MultiChainPaymentUIProps) => {
+  return <div>{children}</div>;
+};

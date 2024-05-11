@@ -1,9 +1,11 @@
 {
-  "name": "@rosen-port/chains",
+  "name": "@rosen-port/ergo-explorer-node",
   "version": "0.1.0",
-  "description": "chains",
+  "description": "ergo explorer and node",
   "keywords": [
-    "chains"
+    "ergo",
+    "explorer",
+    "node"
   ],
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -12,16 +14,23 @@
     "dist",
     "!**/__tests__/**/*"
   ],
+  "jest": {
+    "moduleNameMapper": {
+      "axios": "axios/dist/node/axios.cjs"
+    }
+  },
   "type": "module",
   "scripts": {
     "prettify": "prettier --write . --ignore-path .gitignore",
     "lint": "eslint --fix . && npm run prettify",
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc && tsc-alias",
     "start": "npm run build && node dist/playground.js",
     "type-check": "tsc --noEmit",
     "test": "jest"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@types/jest": "^27.5.2",
@@ -37,8 +46,8 @@
     "prettier": "^2.3.2",
     "ts-jest": "^27.1.5",
     "ts-node": "^10.0.0",
+    "tsc-alias": "^1.8.8",
     "tsx": "^4.7.2",
     "typescript": "^4.3.5"
-  },
-  "dependencies": {}
+  }
 }

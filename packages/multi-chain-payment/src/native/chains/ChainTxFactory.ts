@@ -6,10 +6,13 @@ import { CardanoChainTx } from './cardano';
 import { ErgoChainTx } from './ergo';
 
 export class ChainTxFactory {
-  static getChainTx(network: keyof typeof Networks): IChainTx {
+  static getChainTx(
+    sourceAddress: string,
+    network: keyof typeof Networks
+  ): IChainTx {
     switch (network) {
       case Networks.ergo:
-        return new ErgoChainTx();
+        return new ErgoChainTx(sourceAddress);
       case Networks.cardano:
         return new CardanoChainTx();
       case Networks.bitcoin:
