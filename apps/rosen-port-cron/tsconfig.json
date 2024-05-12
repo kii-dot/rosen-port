@@ -3,6 +3,7 @@
   "compilerOptions": {
     "target": "esnext",
     "outDir": "dist",
+    "moduleResolution": "node",
     "rootDir": "./"
   },
   "ts-node": {
