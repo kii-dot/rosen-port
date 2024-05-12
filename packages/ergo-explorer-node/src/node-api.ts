@@ -22,7 +22,7 @@ export class ErgoNodeAPI {
 
   public async submitTransaction(
     transaction: SignedTransaction
-  ): Promise<string | undefined> {
+  ): Promise<string> {
     const url = `${this.getUrl()}/transactions`;
     try {
       const response = await axios.post(url, transaction);
@@ -42,9 +42,9 @@ export class ErgoNodeAPI {
             return 'retry';
           }
         }
-        return undefined;
+        return '';
       }
-      return undefined;
+      return '';
     }
   }
 

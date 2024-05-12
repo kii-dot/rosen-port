@@ -32,7 +32,7 @@ export class MCPWallet {
 interface IWallet {
   signAndSubmit: (
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
-  ) => Promise<string | undefined>;
+  ) => Promise<string>;
 }
 
 class ErgoWallet implements IWallet {
@@ -48,7 +48,7 @@ class ErgoWallet implements IWallet {
 
   async signAndSubmit(
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
-  ): Promise<string | undefined> {
+  ): Promise<string> {
     const currentHeight = await this.nodeApi.getHeight();
     if (!currentHeight) {
       throw new Error('issue current height');
@@ -79,7 +79,7 @@ class BitcoinWallet implements IWallet {
 
   async signAndSubmit(
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
-  ): Promise<string | undefined> {
+  ): Promise<string> {
     // const result: string = await new Promise((resolve, reject) => {
     //   getXdefiWallet().api.signTransaction({
     //     payload: {
@@ -118,7 +118,7 @@ class CardanoWallet implements IWallet {
   constructor(mnemonic: string) {}
   async signAndSubmit(
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
-  ): Promise<string | undefined> {
+  ): Promise<string> {
     // const signedTxHex = await setTxWitnessSet(
     //   unsignedTx,
     //   await wallet.signTx(unsignedTx, false)

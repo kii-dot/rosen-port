@@ -8,7 +8,6 @@ import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import {
   Amount,
   Box,
-  ErgoUnsignedTransaction,
   OutputBuilder,
   TransactionBuilder,
 } from '@fleet-sdk/core';
@@ -52,7 +51,6 @@ export class ErgoChainTx implements IChainTx {
       return new OutputBuilder(amount, to.toAddress);
     }
 
-    console.log(to.token);
     return new OutputBuilder(
       ErgoChainConstants.minBoxValue,
       to.toAddress
@@ -75,11 +73,9 @@ export class ErgoChainTx implements IChainTx {
         this.senderAddress
       );
 
-      console.log(explorerInputs);
       explorerInputs.forEach((input) => {
         inputs.push(input);
       });
-      console.log(inputs);
     }
 
     return inputs;

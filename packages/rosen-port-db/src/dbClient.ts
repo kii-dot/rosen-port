@@ -107,10 +107,6 @@ class WalletsDB extends DB {
       .select(this.getWalletQuery)
       .eq(DbConstants.wallet.columns.chain.name, chainId);
 
-    console.log('hello');
-    console.log(data);
-    console.log(chainId);
-
     if (data !== null) {
       return to.wallet(data[0]);
     }
