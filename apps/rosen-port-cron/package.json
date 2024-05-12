@@ -29,9 +29,12 @@
     "@rosen-port/errors": "^0.1.0",
     "@rosen-port/multi-chain-payment": "^0.1.0",
     "dotenv": "^16.3.1",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "pino": "^9.0.0"
   },
   "devDependencies": {
-    "@types/node-cron": "^3.0.11"
+    "@types/node": "^20.12.11",
+    "@types/node-cron": "^3.0.11",
+    "pino-pretty": "^11.0.0"
   }
 }

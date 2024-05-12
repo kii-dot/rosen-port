@@ -4,9 +4,15 @@ import { ContainerStatus } from '@rosen-port/db';
 import { TokenMap } from '@rosen-bridge/tokens';
 import tokens from '../../../tokens.json' assert { type: 'json' };
 import { FundDistributor } from './FundDistributor';
+import { Logger } from '../../logging';
+import { CronCategory } from '../../constants/cronConstants';
 
 export const fundDistributorCron = cron.schedule('*/30 * * * * *', async () => {
-  console.log('[FundDistributorCron]: Start cron');
+  Logger.info(
+    '0',
+    CronCategory.FundDistributor,
+    '[FundDistributorCron] Cron start'
+  );
   const tokenMap = new TokenMap(tokens);
   // Run a runner where it Bridge
   // 1. Checks containers that are initiated on whether the amount is full.
@@ -24,30 +30,57 @@ export const fundDistributorCron = cron.schedule('*/30 * * * * *', async () => {
         container.id
       );
       if (isContainerBridged) {
-        console.log('[FundDistributorCron]: Distribute funds start');
+        Logger.info(
+          '0',
+          CronCategory.FundDistributor,
+          '[FundDistributorCron] Distribute funds start'
+        );
         const txId = await fundDistributor.distributeFunds(container);
-        if (txId !== '') {
-          console.log('[FundDistributorCron]: Funds Distributed');
+        if (txId === '') {
+          Logger.error(
+            '0',
+            CronCategory.FundDistributor,
+            `[FundDistributorCron] Failure to distribute funds: ${txId}`
+          );
         }
-        console.log(
-          '[FundDistributorCron]: Distributed funds with txId - ',
-          txId
+
+        Logger.info(
+          '0',
+          CronCategory.FundDistributor,
+          `[FundDistributorCron] Funds Distributed with txId - ${txId}`
         );
 
         const isUpdatedDistributedTx =
           await fundDistributor.updateDistributedTx(txId);
 
         if (isUpdatedDistributedTx) {
-          console.log('[FundDistributorCron]: TxId updated in DB');
+          Logger.info(
+            '0',
+            CronCategory.FundDistributor,
+            '[FundDistributorCron] TxId updated in DB'
+          );
         } else {
-          console.log('[FundDistributorCron]: TxId update Failed');
+          Logger.info(
+            '0',
+            CronCategory.FundDistributor,
+            '[FundDistributorCron] TxId updated in Failed'
+          );
         }
       } else {
-        console.log('Container not bridged');
+        Logger.info(
+          '0',
+          CronCategory.FundDistributor,
+          '[FundDistributorCron] Container not bridged'
+        );
       }
     });
   } catch (error) {
-    console.log('[FundDistributorCron]: Failed with:', error);
+    Logger.info(
+      '0',
+      CronCategory.FundDistributor,
+      '[FundDistributorCron] Failed with ',
+      error
+    );
   }
 
   // Run a runner where it Refunds
