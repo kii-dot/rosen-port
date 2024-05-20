@@ -12,7 +12,7 @@ export interface IFundDistributor {
    * @returns boolean, true represent bridged, false represents
    *          unbridged
    */
-  isContainerBridged: (containerId: string) => boolean;
+  ensureBridged: (container: Container) => Promise<void>;
 
   /**
    * Distributes funds that have been bridged.
@@ -32,5 +32,7 @@ export interface IFundDistributor {
    * @returns boolean, true represents updated, false
    *          represents failure to update db.
    */
-  updateDistributedTx: (txId: string) => boolean;
+  updateDistributedTx: (txId: string) => Promise<boolean>;
+
+  hasRosenWalletReceivedFunds: () => Promise<boolean>;
 }

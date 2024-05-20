@@ -1,23 +1,27 @@
 import {
-  RefundOperatorCron,
+  RefundOperatorCronExecutor,
   IRefundOperator,
   RefundOperator,
 } from './refundOperator';
 import {
   FundDistributor,
-  FundDistributorCron,
+  FundDistributorCronExecutor,
   IFundDistributor,
 } from './fundDistributor';
-import { PortBridger, IPortBridger, PortBridgerCron } from './portBridger';
+import {
+  PortBridger,
+  IPortBridger,
+  PortBridgerCronExecutor,
+} from './portBridger';
 
 export {
-  RefundOperatorCron,
+  RefundOperatorCronExecutor,
   RefundOperator,
   IRefundOperator,
-  FundDistributorCron,
+  FundDistributorCronExecutor,
   FundDistributor,
   IFundDistributor,
-  PortBridgerCron,
+  PortBridgerCronExecutor,
   PortBridger,
   IPortBridger,
 };

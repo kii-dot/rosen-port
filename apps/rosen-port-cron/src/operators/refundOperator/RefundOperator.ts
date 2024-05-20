@@ -1,6 +1,23 @@
+import { Refund, RefundStatus } from '@rosen-port/db';
 import { IRefundOperator } from './types';
+import { Executor } from '../../types/executor';
+import { dbClient } from '../../tools/db';
+import { DBClient } from '@rosen-port/db/dist/src/dbClient';
+import { NotImplementedException } from '@rosen-port/errors';
+import { Logger } from '../../logging';
+import { CronCategory } from '../../constants/cronConstants';
 
-export class RefundOperator implements IRefundOperator {
+export class RefundOperator extends Executor implements IRefundOperator {
+  refund: Refund;
+  db: DBClient;
+  refundSuccessful: boolean = false;
+
+  constructor(refund: Refund, dbClient: DBClient) {
+    super();
+    this.refund = refund;
+    this.db = dbClient;
+  }
+
   /**
    * Start the refund process.
    * 1. Pull all refunded tx
@@ -9,24 +26,48 @@ export class RefundOperator implements IRefundOperator {
    * 4. refund
    * @returns nothing
    */
-  refund: () => void;
+  async onExecute(): Promise<void> {
+    try {
+      this.refundSuccessful = await this.refundTx(this.refund.txIdToRefund);
+
+      Logger.info(
+        '0',
+        CronCategory.RefundOperator,
+        '[RefundOperator] Refund was successful'
+      );
+    } catch (error) {
+      Logger.error(
+        '0',
+        CronCategory.RefundOperator,
+        `[RefundOperator] Refund failed with error: ${error}`
+      );
+    }
+  }
 
   /**
-   * Retrieve all txs that needs to be refunded from DB
+   * Checks to see if refund is possible
+   * 1. Check to see if Tx has been refunded
+   * 2. Check to see if ServiceFee is paid/confirmed
    *
-   * @returns RefundTxs type {
-   *              txToRefund (
-   *                  txId,
-   *                  txStatus,
-   *                  tokenType,
-   *                  amount,
-   *                  sourceChain
-   *              )
-   *              serviceFeeTx,
-   *              txStatus
-   *          }
    */
-  getAllRefundTx: () => [{}];
+  async onBeforeExecute(): Promise<void> {
+    const isServiceFeePaid = await this.checkServiceFeeTxStatus(
+      this.refund.serviceFeeTxId
+    );
+
+    if (!isServiceFeePaid) {
+      throw new Error('Service fee has not been paid');
+    }
+
+    await this.checkRefundValid(this.refund.txIdToRefund);
+  }
+
+  /**
+   * If refund is successful, update in DB
+   */
+  async onAfterExecute(): Promise<void> {
+    await this.updateRefundTxInDb(this.refund.txIdToRefund);
+  }
 
   /**
    * Refunds the tx where a refund request has been triggered.
@@ -38,7 +79,9 @@ export class RefundOperator implements IRefundOperator {
    * @returns true represents refund is processed, false means
    *          refund failed to be processed
    */
-  refundTx: (txId: string) => boolean;
+  async refundTx(txId: string): Promise<boolean> {
+    throw new Error('Not Implemented');
+  }
 
   /**
    * Checks to see if the service fee has been paid for the
@@ -47,7 +90,9 @@ export class RefundOperator implements IRefundOperator {
    * @param serviceFeeTxId txId of the service fee payment
    * @returns true represents confirmed, false represents unconfirmed
    */
-  checkServiceFeeTxStatus: (serviceFeeTxId: string) => boolean;
+  async checkServiceFeeTxStatus(serviceFeeTxId: string): Promise<boolean> {
+    throw new NotImplementedException();
+  }
 
   /**
    * Checks if a tx is valid for refund purposes. If its valid, the
@@ -58,5 +103,20 @@ export class RefundOperator implements IRefundOperator {
    * @returns true represents valid for refund, false means not valid
    *          for refund
    */
-  checkRefundValid: (txId: string) => boolean;
+  async checkRefundValid(txId: string): Promise<boolean> {
+    throw new NotImplementedException();
+  }
+
+  async updateRefundTxInDb(txId: string): Promise<boolean> {
+    const dbUpdated = this.db.refund.updateRefundStatus(
+      this.refund.txIdToRefund,
+      RefundStatus.refund_in_process
+    );
+
+    if (dbUpdated !== null) {
+      return true;
+    }
+
+    return false;
+  }
 }

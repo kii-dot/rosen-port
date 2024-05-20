@@ -1,20 +1,67 @@
-import { Container, TxStatus } from '@rosen-port/db';
+import {
+  Container,
+  ContainerStatus,
+  RosenPortDBClient,
+  TxStatus,
+} from '@rosen-port/db';
 import { IFundDistributor } from './types';
 import {
   FundsTo,
   MCPWallet,
   MultiChainPayment,
 } from '@rosen-port/multi-chain-payment';
-import { dbClient } from '../../tools/db';
 import { TokenMap } from '@rosen-bridge/tokens';
 import { Networks } from '@rosen-port/chains';
 import { MNEMONIC } from '../../constants/mnemonicConstants';
+import { Logger } from '../../logging';
+import { CronCategory } from '../../constants/cronConstants';
+import { Executor } from '../../types/executor';
 
-export class FundDistributor implements IFundDistributor {
+export class FundDistributor extends Executor implements IFundDistributor {
   tokenMap: TokenMap;
-  constructor(tokenMap: TokenMap) {
+  container: Container;
+  updatedTxId: string;
+  db: RosenPortDBClient;
+
+  constructor(tokenMap: TokenMap, container: Container, db: RosenPortDBClient) {
+    super();
     this.tokenMap = tokenMap;
+    this.container = container;
+    this.db = db;
   }
+
+  async onExecute(): Promise<void> {
+    Logger.info(
+      '0',
+      CronCategory.FundDistributor,
+      '[FundDistributorCron] Distribute funds start'
+    );
+
+    this.updatedTxId = await this.distributeFunds(this.container);
+
+    if (this.updatedTxId === '') {
+      Logger.error(
+        '0',
+        CronCategory.FundDistributor,
+        `[FundDistributorCron] Failure to distribute funds: ${this.updatedTxId}`
+      );
+    } else {
+      Logger.info(
+        '0',
+        CronCategory.FundDistributor,
+        `[FundDistributorCron] Funds Distributed with txId - ${this.updatedTxId}`
+      );
+    }
+  }
+
+  async onBeforeExecute(): Promise<void> {
+    await this.ensureBridged(this.container);
+  }
+
+  async onAfterExecute(): Promise<void> {
+    await this.updateDistributedTx(this.updatedTxId);
+  }
+
   /**
    * Checks the DB and the explorer to identify whether
    * a container has been bridged.
@@ -23,8 +70,21 @@ export class FundDistributor implements IFundDistributor {
    * @returns boolean, true represent bridged, false represents
    *          unbridged
    */
-  isContainerBridged(containerId: string): boolean {
-    return true;
+  async ensureBridged(container: Container): Promise<void> {
+    // 1. Check if container is bridged
+    const isBridged = container.status === ContainerStatus.bridged;
+
+    if (!isBridged) {
+      throw new Error('Funds not bridged');
+    }
+
+    // @todo kii
+    // 2. Check if the wallet has received the funds.
+    const isFundsReceived = await this.hasRosenWalletReceivedFunds();
+
+    if (!isFundsReceived) {
+      throw new Error('Funds not Received');
+    }
   }
 
   /**
@@ -36,13 +96,13 @@ export class FundDistributor implements IFundDistributor {
    *          represents failure in distribution.
    */
   async distributeFunds(container: Container): Promise<string> {
-    const txs = await dbClient.tx.getContainerTxs(container.id);
+    const txs = await this.db.tx.getContainerTxs(this.container.id);
     const to: Array<FundsTo> = [];
     const token = container.tokenType.tokenId;
     const rosenChainTokens = this.tokenMap.search(container.destChain, {
       tokenId: token,
     });
-    const rosenPortWalletAddress = await dbClient.wallet.getWallet(
+    const rosenPortWalletAddress = await this.db.wallet.getWallet(
       container.destChain
     );
     txs.forEach(async (tx) => {
@@ -82,7 +142,28 @@ export class FundDistributor implements IFundDistributor {
    * @returns boolean, true represents updated, false
    *          represents failure to update db.
    */
-  updateDistributedTx(txId: string): boolean {
-    return true;
+  async updateDistributedTx(txId: string): Promise<boolean> {
+    const dbResult = await this.db.tx.updateDistributedTxId(
+      txId,
+      this.container.id
+    );
+
+    var isAllUpdated: boolean = true;
+
+    dbResult.forEach((tx) => {
+      if (!(tx.distributedTxId === txId && tx.txStatus === TxStatus.sent)) {
+        isAllUpdated = false;
+      }
+    });
+
+    if (isAllUpdated) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async hasRosenWalletReceivedFunds(): Promise<boolean> {
+    throw new Error('Not Implemented');
   }
 }

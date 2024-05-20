@@ -26,7 +26,7 @@ export class Logger {
     category: CronCategory,
     msg: string,
     ...args: any[]
-  ) {
+  ): void {
     const appInfo = {
       category,
       tag,
@@ -40,7 +40,7 @@ export class Logger {
     category: CronCategory,
     msg: string,
     ...args: any[]
-  ) {
+  ): void {
     const appInfo = {
       category,
       tag,
@@ -54,7 +54,7 @@ export class Logger {
     category: CronCategory,
     msg: string,
     ...args: any[]
-  ) {
+  ): void {
     const appInfo = {
       category,
       tag,
@@ -68,7 +68,7 @@ export class Logger {
     category: CronCategory,
     msg: string,
     ...args: any[]
-  ) {
+  ): void {
     const appInfo = {
       category,
       tag,
@@ -82,7 +82,7 @@ export class Logger {
     category: CronCategory,
     msg: string,
     ...args: any[]
-  ) {
+  ): void {
     const appInfo = {
       category,
       tag,
