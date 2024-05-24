@@ -4,6 +4,7 @@
     "target": "esnext",
     "outDir": "dist",
     "moduleResolution": "node",
+    "experimentalDecorators": true,
     "rootDir": "./"
   },
   "ts-node": {

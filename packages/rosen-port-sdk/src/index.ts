@@ -4,5 +4,6 @@
 // from one wallet, to the rosen-port
 // wallets.
 import { RosenPortSDK } from './RosenPortSDK';
+import { REFUND_SERVICE_FEE } from './constants/serviceFee';
 
-export { RosenPortSDK };
+export { RosenPortSDK, REFUND_SERVICE_FEE };

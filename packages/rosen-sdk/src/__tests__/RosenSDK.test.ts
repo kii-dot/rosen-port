@@ -1,5 +1,5 @@
 import { RosenSDK } from '../RosenSDK'; // Adjust the path based on your structure
-import { feeConfigTokenId } from '../constants';
+import { FEE_CONFIG_TOKEN_ID } from '../constants';
 
 describe('RosenSDK', () => {
   it('should correctly store and return its configuration', async () => {
@@ -10,7 +10,7 @@ describe('RosenSDK', () => {
     };
 
     const sdkConfig = {
-      FeeConfigTokenId: feeConfigTokenId,
+      FeeConfigTokenId: FEE_CONFIG_TOKEN_ID,
       NetworkConfig: networkConfig,
     };
     const rsnTokenId =

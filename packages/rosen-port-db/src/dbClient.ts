@@ -1,4 +1,8 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import {
+  PostgrestError,
+  SupabaseClient,
+  createClient,
+} from '@supabase/supabase-js';
 import {
   Container,
   ContainerStatus,
@@ -120,6 +124,7 @@ class ContainerDB extends DB {
         id,
         created_at,
         bridged_time,
+        bridged_tx_id,
         source_chain,
         dest_chain,
         status,
@@ -227,6 +232,32 @@ class ContainerDB extends DB {
       [DbConstants.containers.columns.token_type.name]: tokenType,
       [DbConstants.containers.columns.status.name]: ContainerStatus.initiated,
     });
+
+    if (data !== null) {
+      return to.container(data[0]);
+    }
+
+    throw error;
+  };
+
+  /**
+   * Update container status
+   * @param txId
+   * @param txStatus
+   * @returns
+   */
+  updateContainerStatus = async (
+    containerId: string,
+    containerStatus: ContainerStatus
+  ): Promise<Container> => {
+    const { data, error } = await this.updateData(
+      DbConstants.containers.name,
+      {
+        [DbConstants.containers.columns.status.name]: containerStatus,
+      },
+      DbConstants.transactions.columns.id.name,
+      containerId
+    );
 
     if (data !== null) {
       return to.container(data[0]);
@@ -376,9 +407,59 @@ class TxDB extends DB {
 
     throw error;
   };
+
+  updateDistributedTxId = async (
+    distributedTxId: string,
+    containerId: string
+  ): Promise<Tx[]> => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.transactions.name)
+      .update({
+        [DbConstants.transactions.columns.tx_status.name]: TxStatus.sent,
+        [DbConstants.transactions.columns.distributed_tx_id.name]:
+          distributedTxId,
+      })
+      .eq(DbConstants.transactions.columns.container_id.name, containerId)
+      .select();
+
+    if (data !== null) {
+      return data.map((item) => {
+        return to.tx(item);
+      });
+    }
+
+    throw error;
+  };
 }
 
 class RefundsDB extends DB {
+  // @todo kii this needs fixing so that it is the same as the RefundClass
+  getRefundQuery: string = `
+        id,
+        created_at,
+        status,
+        refund_tx_id,
+        service_fee_tx_id,
+        transactions (
+          id,
+          created_at,
+          initiated_tx_id,
+          amount,
+          source_address,
+          dest_address,
+          tx_status,
+          distributed_tx_id,
+          containers (
+            status,
+            id, 
+            created_at,
+            bridged_time,
+            source_chain,
+            dest_chain,
+            token_type (id, name, token_id, native_chain)
+          )
+        ))
+        `;
   constructor(supabaseClient: SupabaseClient) {
     super();
     this.supabaseClient = supabaseClient;
@@ -394,13 +475,35 @@ class RefundsDB extends DB {
     serviceFeeTxId: string
   ): Promise<Refund> => {
     const { data, error } = await this.insertData(DbConstants.refunds.name, {
-      [DbConstants.refunds.columns.tx_id_to_refund.name]: txIdToRefund,
+      [DbConstants.refunds.columns.tx_to_refund.name]: txIdToRefund,
       [DbConstants.refunds.columns.service_fee_tx_id.name]: serviceFeeTxId,
       [DbConstants.refunds.columns.status.name]: RefundStatus.refund_initiated,
     });
 
     if (data !== null) {
       return to.refund(data[0]);
+    }
+
+    throw error;
+  };
+
+  /**
+   * Get the refunds based on the refundStatus
+   * @param refundStatus
+   * @returns
+   */
+  getRefundByStatus = async (refundStatus: RefundStatus): Promise<Refund[]> => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.refunds.name)
+      .select(this.getRefundQuery)
+      .eq(DbConstants.refunds.columns.status.name, refundStatus);
+
+    if (data !== null && error == null) {
+      const refunds = data.map((result) => {
+        return to.refund(result);
+      });
+
+      return refunds;
     }
 
     throw error;
@@ -421,7 +524,7 @@ class RefundsDB extends DB {
       {
         [DbConstants.refunds.columns.service_fee_tx_id.name]: serviceFeeTxId,
       },
-      DbConstants.refunds.columns.tx_id_to_refund.name,
+      DbConstants.refunds.columns.tx_to_refund.name,
       txIdToRefund
     );
 
@@ -447,7 +550,7 @@ class RefundsDB extends DB {
       {
         [DbConstants.refunds.columns.refund_tx_id.name]: refundTxId,
       },
-      DbConstants.refunds.columns.tx_id_to_refund.name,
+      DbConstants.refunds.columns.tx_to_refund.name,
       txIdToRefund
     );
 
@@ -464,16 +567,18 @@ class RefundsDB extends DB {
    * @param txStatus
    * @returns
    */
-  updateRefundStatus = async (
+  updateRefund = async (
     txIdToRefund: string,
+    refundedTxId: string,
     refundStatus: RefundStatus
   ): Promise<Refund> => {
     const { data, error } = await this.updateData(
       DbConstants.refunds.name,
       {
         [DbConstants.refunds.columns.status.name]: refundStatus,
+        [DbConstants.refunds.columns.refund_tx_id.name]: refundedTxId,
       },
-      DbConstants.refunds.columns.tx_id_to_refund.name,
+      DbConstants.refunds.columns.tx_to_refund.name,
       txIdToRefund
     );
 

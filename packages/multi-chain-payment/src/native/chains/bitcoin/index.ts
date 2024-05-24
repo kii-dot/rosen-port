@@ -1,6 +1,6 @@
 import { FundsTo, IChainTx } from '../../../types/ChainTxs';
 import { UnsignedPsbtData } from '@rosen-port/chains';
-import { NotImplementedException } from '@rosen-port/errors';
+import { NotImplementedException } from '../../../../../rosen-commons/dist/src';
 import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 
 export class BitcoinChainTx implements IChainTx {

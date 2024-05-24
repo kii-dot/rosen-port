@@ -1,9 +1,5 @@
-import { refundOperatorCron } from './RefundOperatorCron';
+import { RefundOperatorCronExecutor } from './RefundOperatorCron';
 import { RefundOperator } from './RefundOperator';
 import { IRefundOperator } from './types';
 
-export {
-  refundOperatorCron as RefundOperatorCron,
-  IRefundOperator,
-  RefundOperator,
-};
+export { RefundOperatorCronExecutor, IRefundOperator, RefundOperator };

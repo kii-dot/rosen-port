@@ -3,6 +3,7 @@ import {
   BlockHeadersResponse,
   Box,
   NetworkStats,
+  Transaction,
 } from './types/explorer.types';
 import { ErgoExplorerUrl, ErgoNetwork, IErgoExplorerUrl } from './constant';
 
@@ -41,6 +42,15 @@ export class ErgoExplorerAPI {
     const url = `${this.getUrl()}/api/v1/mempool/transactions/submit`;
     try {
       return (await axios.post(url, transaction)).data;
+    } catch (error) {
+      throw new Error('Error submitting transactions');
+    }
+  }
+
+  public async getTransaction(transactionId: string): Promise<Transaction> {
+    const url = `${this.getUrl()}/api/v1/transactions/${transactionId}`;
+    try {
+      return (await axios.get(url)).data;
     } catch (error) {
       throw new Error('Error submitting transactions');
     }
