@@ -9,7 +9,7 @@ import { TimeType, getCronString, RosenPortCronFactory } from './cron';
  */
 
 const thirtySeconds = {
-  value: 30,
+  value: 5,
   time: TimeType.seconds,
 };
 

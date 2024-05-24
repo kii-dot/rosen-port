@@ -1,17 +1,17 @@
 import { dbClient } from '../../tools/db';
 import { Container, ContainerStatus } from '@rosen-port/db';
 import { TokenMap } from '@rosen-bridge/tokens';
-import tokens from '../../../tokens.json' assert { type: 'json' };
 import { FundDistributor } from './FundDistributor';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
+import { tokenMap } from '../../tools/tokenMap';
 
 export class FundDistributorCronExecutor extends RosenPortCronExecutor {
   tokenMap: TokenMap;
   constructor(cronTimeString: string) {
     super(cronTimeString, CronCategory.FundDistributor);
-    this.tokenMap = new TokenMap(tokens);
+    this.tokenMap = tokenMap;
   }
 
   async getValidContainers(): Promise<Container[]> {

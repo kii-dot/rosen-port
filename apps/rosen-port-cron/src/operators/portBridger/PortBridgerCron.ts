@@ -1,5 +1,3 @@
-import * as cron from 'node-cron';
-import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { dbClient } from '../../tools/db';
 import { Container, ContainerStatus } from '@rosen-port/db';

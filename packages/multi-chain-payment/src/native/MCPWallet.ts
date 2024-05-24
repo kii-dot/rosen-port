@@ -2,7 +2,7 @@ import { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import { ChainNotImplementedError } from '../error/ChainTxErrors';
 import { UnsignedPsbtData, Networks } from '@rosen-port/chains';
-import { NotImplementedException } from '../../../rosen-commons/dist/src';
+import { NotImplementedException } from '@rosen-port/errors';
 import {
   Wallet as ErgoBackendWallet,
   ErgoNodeAPI,

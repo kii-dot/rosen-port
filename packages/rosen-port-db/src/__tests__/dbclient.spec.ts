@@ -1,4 +1,4 @@
-import { RosenPortDBClient, TxStatus } from '@rosen-port/db';
+import { RefundStatus, RosenPortDBClient, TxStatus } from '@rosen-port/db';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -13,9 +13,8 @@ export const dbClient = new RosenPortDBClient(
 
 describe('dbclient', () => {
   it('should get boxes', async () => {
-    const wallet = await dbClient.tx.updateTxStatus(
-      '94df75d1b0e1d73e611acc677317fee24dadac2aef10903ade4046ef5f93f062',
-      TxStatus.sent
+    const wallet = await dbClient.refund.getRefundByStatus(
+      RefundStatus.refund_initiated
     );
     console.log(wallet);
   });

@@ -34,6 +34,13 @@ export class PortBridger extends Executor implements IPortBridger {
     }
   }
 
+  /**
+   * Check if PortBridger is executable
+   * on conditions:
+   * 1. Container is not Bridged
+   * 2. Container is filled up
+   * 3. Wallet has enough funds
+   */
   async onBeforeExecute(): Promise<void> {
     // 2a. Double check to see if the container has not been bridged
     const isContainerBridged = this.isContainerBridged(this.container);
@@ -74,6 +81,11 @@ export class PortBridger extends Executor implements IPortBridger {
     }
   }
 
+  /**
+   * Ensure DB Updated
+   *
+   * 1. Update container in db to bridging status
+   */
   async onAfterExecute(): Promise<void> {
     // 4a. Update container in db to bridging status
     if (this.isBridgeSuccessful) {
@@ -194,7 +206,10 @@ export class PortBridger extends Executor implements IPortBridger {
   }
 
   /**
-   *
+   * Update
+   * - Bridge Status
+   * - Bridged Time
+   * - Bridge Tx Id
    * @param containerId Id of container
    * @returns whether the db was updated
    */

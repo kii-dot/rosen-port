@@ -1,9 +1,9 @@
-import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { dbClient } from '../../tools/db';
 import { Refund, RefundStatus } from '@rosen-port/db';
 import { RefundOperator } from './RefundOperator';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
+import { tokenMap } from '../../tools/tokenMap';
 
 // Run a runner where it Refunds
 // 1. Check for Tx that needs to be refunded
@@ -26,14 +26,8 @@ export class RefundOperatorCronExecutor extends RosenPortCronExecutor {
 
     // 2. For each refunds
     refunds.forEach((refund) => {
-      const refundOperator = new RefundOperator(refund, dbClient);
+      const refundOperator = new RefundOperator(refund, dbClient, tokenMap);
       refundOperator.execute();
-      // 2a. Check to see if service fee is paid (check explorer if refundTxId is confirmed)
-      // 2b. If paid,
-      // 2bi. Get Tx from db
-      // 2bii. create MCPWallet to send funds back
-      // 2biii. update refund db to refunded, and with refund txId.
-      // 2c. If not paid, continue
     });
   }
 }

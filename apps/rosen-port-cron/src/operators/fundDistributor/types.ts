@@ -22,7 +22,7 @@ export interface IFundDistributor {
    * @returns boolean, true represents distributed, false
    *          represents failure in distribution.
    */
-  distributeFunds: (container: Container) => Promise<string>;
+  distributeFunds: (container: Container, txs: Tx[]) => Promise<string>;
 
   /**
    * Updates the tx status of the tx with the txId in db
@@ -34,5 +34,8 @@ export interface IFundDistributor {
    */
   updateDistributedTx: (txId: string) => Promise<boolean>;
 
-  hasRosenWalletReceivedFunds: () => Promise<boolean>;
+  hasPortWalletReceivedFunds: (
+    container: Container,
+    txs: Tx[]
+  ) => Promise<boolean>;
 }

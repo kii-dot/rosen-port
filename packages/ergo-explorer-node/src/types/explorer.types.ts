@@ -79,3 +79,70 @@ export interface NetworkStats {
   maxTxGix: number;
   params: Params;
 }
+
+export interface Transaction {
+  id: string;
+  blockId: string;
+  inclusionHeight: number;
+  timestamp: number;
+  index: number;
+  globalIndex: number;
+  numConfirmations: number;
+  inputs: Input[];
+  dataInputs: any[]; // Empty array, type unspecified
+  outputs: Output[];
+  size: number;
+}
+
+export interface Input {
+  boxId: string;
+  value: number;
+  index: number;
+  spendingProof: string | null;
+  outputBlockId: string;
+  outputTransactionId: string;
+  outputIndex: number;
+  outputGlobalIndex: number;
+  outputCreatedAt: number;
+  outputSettledAt: number;
+  ergoTree: string;
+  ergoTreeConstants: string;
+  ergoTreeScript: string;
+  address: string;
+  assets: Asset[];
+  additionalRegisters: Record<string, AdditionalRegister>;
+}
+
+export interface Output {
+  boxId: string;
+  transactionId: string;
+  blockId: string;
+  value: number;
+  index: number;
+  globalIndex: number;
+  creationHeight: number;
+  settlementHeight: number;
+  ergoTree: string;
+  ergoTreeConstants: string;
+  ergoTreeScript: string;
+  address: string;
+  assets: Asset[];
+  additionalRegisters: Record<string, AdditionalRegister>;
+  spentTransactionId: string | null;
+  mainChain: boolean;
+}
+
+export interface Asset {
+  tokenId: string;
+  index: number;
+  amount: number;
+  name: string;
+  decimals: number;
+  type: string;
+}
+
+export interface AdditionalRegister {
+  serializedValue: string;
+  sigmaType: string | null;
+  renderedValue: string | null;
+}

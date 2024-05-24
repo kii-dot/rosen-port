@@ -37,7 +37,8 @@ export abstract class RosenPortCronExecutor implements ICronExecutor {
         Logger.error(
           '0',
           this.cronCategory,
-          `[${this.cronCategory}] Failed with ${error}`
+          //@ts-ignore
+          `[${this.cronCategory}] Failed with ${error.name}: ${error.message}`
         );
       }
     });

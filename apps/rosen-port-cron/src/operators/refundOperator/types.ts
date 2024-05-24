@@ -8,11 +8,10 @@ export interface IRefundOperator {
    * Its a send payment to source address of source network function.
    * NOTE: Checks are done in here.
    *
-   * @param txId id of the tx to be refunded
    * @returns true represents refund is processed, false means
    *          refund failed to be processed
    */
-  refundTx: (txId: string) => Promise<boolean>;
+  refundTx: () => Promise<string>;
 
   /**
    * Checks to see if the service fee has been paid for the
@@ -21,7 +20,10 @@ export interface IRefundOperator {
    * @param serviceFeeTxId txId of the service fee payment
    * @returns true represents confirmed, false represents unconfirmed
    */
-  checkServiceFeeTxStatus: (serviceFeeTxId: string) => Promise<boolean>;
+  checkServiceFeeTxStatus: (
+    serviceFeeTxId: string,
+    network: string
+  ) => Promise<boolean>;
 
   /**
    * Checks if a tx is valid for refund purposes. If its valid, the
@@ -34,5 +36,5 @@ export interface IRefundOperator {
    */
   checkRefundValid: (txId: string) => Promise<boolean>;
 
-  updateRefundTxInDb: (txId: string) => Promise<boolean>;
+  updateRefundTxInDb: (txId: string, refundedTxId: string) => Promise<boolean>;
 }

@@ -102,7 +102,8 @@ export class Token {
 export class Refund {
   id: string;
   createdAt: string;
-  txIdToRefund: string;
+  txToRefund: Tx;
+  container: Container;
   serviceFeeTxId: string;
   status: RefundStatus;
   refundTxId: string;
@@ -110,24 +111,27 @@ export class Refund {
   constructor({
     id,
     createdAt,
-    txIdToRefund,
+    txToRefund,
     status,
     refundTxId,
     serviceFeeTxId,
+    container,
   }: {
     id: string;
     createdAt: string;
-    txIdToRefund: string;
+    txToRefund: Tx;
     status: RefundStatus;
     refundTxId: string;
     serviceFeeTxId: string;
+    container: Container;
   }) {
     this.id = id;
     this.createdAt = createdAt;
-    this.txIdToRefund = txIdToRefund;
+    this.txToRefund = txToRefund;
     this.status = status;
     this.refundTxId = refundTxId;
     this.serviceFeeTxId = serviceFeeTxId;
+    this.container = container;
   }
 }
 
@@ -151,6 +155,7 @@ export class Container {
   id: string;
   createdAt: string;
   bridgedTime: string;
+  bridgedTxId: string;
   sourceChain: string;
   destChain: string;
   tokenType: Token;
@@ -161,6 +166,7 @@ export class Container {
     id,
     createdAt,
     bridgedTime = '',
+    bridgedTxId,
     sourceChain,
     destChain,
     tokenType,
@@ -170,6 +176,7 @@ export class Container {
     id: string;
     createdAt: string;
     bridgedTime: string;
+    bridgedTxId: string;
     sourceChain: string;
     destChain: string;
     tokenType: Token;
@@ -179,6 +186,7 @@ export class Container {
     this.id = id;
     this.createdAt = createdAt;
     this.bridgedTime = bridgedTime;
+    this.bridgedTxId = bridgedTxId;
     this.sourceChain = sourceChain;
     this.destChain = destChain;
     this.tokenType = tokenType;
@@ -254,6 +262,7 @@ export class to {
       id: data.id,
       createdAt: data.created_at,
       bridgedTime: data.bridged_time,
+      bridgedTxId: data.bridged_tx_id,
       sourceChain: data.source_chain,
       destChain: data.dest_chain,
       tokenType: tokenType,
@@ -277,13 +286,27 @@ export class to {
   }
 
   static refund(data: any): Refund {
+    const tx = new Tx({
+      id: data.transactions.id,
+      createdAt: data.transactions.created_at,
+      initiatedTxId: data.transactions.initiated_tx_id,
+      amount: data.transactions.amount,
+      sourceAddress: data.transactions.source_address,
+      destAddress: data.transactions.dest_address,
+      txStatus: data.transactions.tx_status,
+      distributedTxId: data.transactions.distributed_tx_id,
+      containerId: data.transactions.container_id,
+    });
+
+    const container = this.container(data.transactions.containers);
     return new Refund({
       id: data.id,
       createdAt: data.created_at,
-      txIdToRefund: data.tx_id_to_refund,
+      txToRefund: tx,
       refundTxId: data.refund_tx_id,
       status: data.status,
       serviceFeeTxId: data.service_fee_tx_id,
+      container: container,
     });
   }
 
@@ -400,8 +423,8 @@ export const DbConstants = {
         name: 'created_at',
         type: DB_TYPE.timestamp,
       },
-      tx_id_to_refund: {
-        name: 'tx_id_to_refund',
+      tx_to_refund: {
+        name: 'tx_to_refund',
         type: DB_TYPE.text,
       },
       refund_tx_id: {
