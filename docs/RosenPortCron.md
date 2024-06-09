@@ -1,5 +1,3 @@
-Certainly! Let's delve deeper into the implementation details and functionalities of each cron job component, with an added focus on the interactions and dependencies between them, to ensure a comprehensive design spec.
-
 ### Detailed Implementation of Rosen-Port Cron Job Components
 
 #### 1. **FundDistributor Class**
