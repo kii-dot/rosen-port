@@ -2,7 +2,7 @@
  * Interface for the Status Update Cron functionality.
  * This interface defines the responsibilities for updating and checking the statuses of transactions, containers, and refunds.
  */
-interface IStatusUpdateCron {
+interface IStatusChecker {
     /** Retrieves the current status of a transaction using its unique identifier. */
     checkTransactionStatus(transactionId: string): TransactionStatus;
 
