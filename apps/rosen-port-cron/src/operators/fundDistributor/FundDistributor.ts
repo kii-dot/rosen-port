@@ -16,11 +16,12 @@ import { Networks } from '@rosen-port/chains';
 import { MNEMONIC } from '../../constants/mnemonicConstants';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
-import { Executor } from '../../types/executor';
+import { PortExecutor } from '../../types/executor';
 import { NotImplementedException } from '@rosen-port/errors';
 import { Wallet } from '@rosen-port/db';
+import { RosenChains } from '@rosen/sdk';
 
-export class FundDistributor extends Executor implements IFundDistributor {
+export class FundDistributor extends PortExecutor implements IFundDistributor {
   tokenMap: TokenMap;
   container: Container;
   updatedTxId: string;
@@ -59,6 +60,11 @@ export class FundDistributor extends Executor implements IFundDistributor {
   }
 
   async onBeforeExecute(): Promise<void> {
+    Logger.info(
+      '0',
+      CronCategory.FundDistributor,
+      RosenChains.getBaseNetworkFee(Networks.ergo).toString()
+    );
     this.txs = await this.getContainerTxs(this.container);
     await this.ensureBridged(this.container);
   }
@@ -94,14 +100,6 @@ export class FundDistributor extends Executor implements IFundDistributor {
     }
   }
 
-  async getPortWallet(container: Container): Promise<Wallet> {
-    const rosenPortWalletAddress = await this.db.wallet.getWallet(
-      container.destChain
-    );
-
-    return rosenPortWalletAddress;
-  }
-
   async getContainerTxs(container: Container): Promise<Tx[]> {
     const txs = await this.db.tx.getContainerTxs(this.container.id);
     return txs;
@@ -122,7 +120,9 @@ export class FundDistributor extends Executor implements IFundDistributor {
       tokenId: token,
     });
 
-    const rosenPortWalletAddress = await this.getPortWallet(this.container);
+    const rosenPortWalletAddress = await this.getPortWallet(
+      this.container.destChain
+    );
 
     txs.forEach(async (tx) => {
       if (tx.txStatus === TxStatus.bridged) {

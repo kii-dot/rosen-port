@@ -15,5 +15,9 @@
     "resolveFullPaths": true,
     "verbose": false
   },
-  "include": ["src", "./tokens.json"]
+  "include": [
+    "src",
+    "src/assets/rosenTokens.json",
+    "src/assets/rosenLaunchConfig.json"
+  ]
 }

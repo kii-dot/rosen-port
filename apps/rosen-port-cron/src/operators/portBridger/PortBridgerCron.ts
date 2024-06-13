@@ -3,6 +3,7 @@ import { dbClient } from '../../tools/db';
 import { Container, ContainerStatus } from '@rosen-port/db';
 import { PortBridger } from './PortBridger';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
+import { rosenUI } from '../../tools/rosen';
 
 /**
  * The goal of this cron job is to:
@@ -27,7 +28,7 @@ export class PortBridgerCronExecutor extends RosenPortCronExecutor {
 
     // 2. For each containers
     containers.forEach(async (container) => {
-      const portBridger = new PortBridger(container, dbClient);
+      const portBridger = new PortBridger(container, dbClient, rosenUI);
 
       await portBridger.execute();
     });

@@ -18,7 +18,7 @@
     "prettify": "prettier --write . --ignore-path .gitignore",
     "lint": "eslint --fix . && npm run prettify",
     "build": "rimraf ./dist && tsc && tsc-alias",
-    "start": "node --experimental-specifier-resolution=node dist/src/index.js",
+    "start": "NODE_OPTIONS=--loader=extensionless node --experimental-specifier-resolution=node dist/src/index.js",
     "type-check": "tsc --noEmit",
     "test": "jest"
   },

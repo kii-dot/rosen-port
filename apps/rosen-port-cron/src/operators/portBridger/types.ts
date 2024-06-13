@@ -21,5 +21,5 @@ export interface IPortBridger {
    * @param containerId ContainerId of container to be bridged
    * @returns boolean determining whether the bridging was successful
    */
-  bridgeContainer: (containerId: string) => Promise<boolean>;
+  bridgeContainer: (container: Container) => Promise<string>;
 }

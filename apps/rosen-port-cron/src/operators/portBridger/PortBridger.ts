@@ -9,29 +9,31 @@ import { NotImplementedException } from '@rosen-port/errors';
 import { IPortBridger } from './types';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
-import { Executor } from '../../types/executor';
+import { PortExecutor } from '../../types/executor';
+import { RosenChains, RosenUserInterface } from '@rosen/sdk';
+import { MCPWallet } from '@rosen-port/multi-chain-payment';
+import { MNEMONIC } from '../../constants/mnemonicConstants';
 
-export class PortBridger extends Executor implements IPortBridger {
+export class PortBridger extends PortExecutor implements IPortBridger {
   container: Container;
   db: RosenPortDBClient;
-  isBridgeSuccessful: boolean = false;
+  bridgeTx: string = '';
+  containerTxs: Tx[];
+  rosenUI: RosenUserInterface;
 
-  constructor(container: Container, db: RosenPortDBClient) {
+  constructor(
+    container: Container,
+    db: RosenPortDBClient,
+    rosenUI: RosenUserInterface
+  ) {
     super();
     this.container = container;
     this.db = db;
+    this.rosenUI = rosenUI;
   }
 
   async onExecute(): Promise<void> {
-    this.isBridgeSuccessful = await this.bridgeContainer(this.container.id);
-
-    if (this.isBridgeSuccessful) {
-      Logger.error(
-        '0',
-        CronCategory.PortBridger,
-        `[PortBridger] Container (${this.container.id}) Bridged successfully`
-      );
-    }
+    this.bridgeTx = await this.bridgeContainer(this.container);
   }
 
   /**
@@ -88,7 +90,9 @@ export class PortBridger extends Executor implements IPortBridger {
    */
   async onAfterExecute(): Promise<void> {
     // 4a. Update container in db to bridging status
-    if (this.isBridgeSuccessful) {
+    const isBridgeSuccessful = await this.isBridgeSuccessful(this.bridgeTx);
+    if (isBridgeSuccessful) {
+      // @todo Update with bridge TxId
       const isBridgedDBUpdated = await this.updateContainerStatus(
         this.container.id
       );
@@ -100,10 +104,24 @@ export class PortBridger extends Executor implements IPortBridger {
           '[PortBridger] DB updated as bridged'
         );
       }
+    } else {
+      Logger.error(
+        '0',
+        CronCategory.PortBridger,
+        `[PortBridger] Container (${this.container.id}) Bridged successfully`
+      );
     }
   }
 
   //#region PortBridger Utility Functions
+
+  /**
+   * Check explorer to see if a tx is bridged via explorer
+   * @param bridgeTx
+   */
+  async isBridgeSuccessful(bridgeTx: string): Promise<boolean> {
+    throw new NotImplementedException();
+  }
 
   isContainerBridged(container: Container): boolean {
     return (
@@ -121,10 +139,18 @@ export class PortBridger extends Executor implements IPortBridger {
    * We get the value, cache it, if the new comparison exceeds the cache
    * value, we do another check with Rosen-SDK to ensure the sdk has a
    * correct value as compared to cached.
+   *
+   * To get token minimum amount, we will have to get the minimum transfer
+   * fee for the token.
    * @param container
    */
-  async getTokenMinimumAmount(container: Container): Promise<number> {
-    throw new NotImplementedException();
+  async getTokenMinimumAmount(container: Container): Promise<bigint> {
+    return await this.rosenUI.getMinimumTransferAmountForToken(
+      // @ts-ignore
+      container.sourceChain,
+      container.tokenType.id,
+      container.destChain
+    );
   }
 
   //#endregion
@@ -138,14 +164,14 @@ export class PortBridger extends Executor implements IPortBridger {
    */
   async isContainerFilled(container: Container): Promise<boolean> {
     // 1. Get txs
-    const txs: Tx[] = await this.db.tx.getContainerTxs(container.id);
+    this.containerTxs = await this.db.tx.getContainerTxs(container.id);
 
     // 2. Check if all tx is confirmed
     // If not all tx is confirmed, we stop the
     // bridge
     var isAllTxConfirmed: boolean = true;
     const unconfirmedTxs: string[] = [];
-    txs.forEach((tx) => {
+    this.containerTxs.forEach((tx) => {
       if (tx.txStatus !== TxStatus.confirmed) {
         isAllTxConfirmed = false;
         unconfirmedTxs.push(tx.initiatedTxId);
@@ -165,10 +191,10 @@ export class PortBridger extends Executor implements IPortBridger {
     // If not, we return false, we do this before
     // comparing in explorer so that we do not waste
     // resource and its performant.
-    const tokenMinimumAmount: number = await this.getTokenMinimumAmount(
+    const tokenMinimumAmount: bigint = await this.getTokenMinimumAmount(
       this.container
     );
-    const totalAmount: number = txs.reduce(
+    const totalAmount: number = this.containerTxs.reduce(
       (accumulator, currentValue) => accumulator + currentValue.amount,
       0
     );
@@ -195,14 +221,37 @@ export class PortBridger extends Executor implements IPortBridger {
    * Checks to see if container is filled first. If Container is not
    * filled, it logs a message and then wait till next cron job run.
    *
+   * @todo kii this needs verification
+   *
    * @param containerId ContainerId of container to be bridged
    * @returns boolean determining whether the bridging was successful
    */
-  async bridgeContainer(containerId: string): Promise<boolean> {
+  async bridgeContainer(container: Container): Promise<string> {
     // 3. Utilizing Rosen-SDK
     // 3a. Collect Input from wallets
     // 3b. bridge the funds
-    throw new Error('Not Implemented');
+    const destWalletAddress = this.getPortWallet(container.destChain);
+    const sourceWalletAddress = this.getPortWallet(container.sourceChain);
+    const unsignedLockTx: string = await RosenChains.getLockTransaction(
+      // @ts-ignore
+      container.sourceChain,
+      container.destChain,
+      destWalletAddress,
+      sourceWalletAddress,
+      container.tokenType.id,
+      container.totalAmount
+    );
+
+    // @ts-ignore
+    const network = Networks[container.destChain];
+    // @ts-ignore
+    const walletMnemonic = MNEMONIC[container.destChain];
+    const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
+
+    // Sign and send txs
+    const tx = await wallet.signAndSubmit(unsignedLockTx);
+
+    return tx;
   }
 
   /**
