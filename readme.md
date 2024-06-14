@@ -12,6 +12,7 @@ To start the project, you'll have to build and run both the Cron job and the Ui.
 Run build.sh. This builds all the packages that rosen-port uses.
 
 ```bash
+npm i
 ./build.sh
 ```
 
