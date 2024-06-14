@@ -7,6 +7,18 @@ It discusses a high level overview of Rosen-Port. And goes into the design and f
 
 ## Start up
 
+First you will need to link rosen-sdk, in the future, this will likely be a package, but for the time being, it can be found in the public repo: https://github.com/rosen-bridge/rosen-sdk
+
+From the parent directory of the rosen-port, download and link rosen-sdk by running:
+
+```bash
+git clone https://github.com/rosen-bridge/rosen-sdk.git
+cd rosen-sdk
+npm link
+cd ../rosen-port
+npm link ../rosen-sdk
+```
+
 To start the project, you'll have to build and run both the Cron job and the Ui. You can do that by:
 
 Run build.sh. This builds all the packages that rosen-port uses.
@@ -16,10 +28,15 @@ npm i
 ./build.sh
 ```
 
+To run UI, go to:
+```bash
+cd apps/rosen-port-ui
+```
+create an .env file and set the appropriate keys
+
 then run ui:
 
 ```bash
-cd apps/rosen-port-ui
 npm run dev
 ```
 

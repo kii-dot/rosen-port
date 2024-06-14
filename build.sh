@@ -8,8 +8,6 @@ echo "building monorepo packages..."
 
 npm run build --workspace packages/rosen-port-db
 npm run build --workspace packages/multi-chain-payment
-npm run build --workspace packages/rosen-sdk
-npm run build --workspace packages/rosen-port-sdk
 npm run build --workspace packages --if-present
 
 cd apps/rosen-port-ui
