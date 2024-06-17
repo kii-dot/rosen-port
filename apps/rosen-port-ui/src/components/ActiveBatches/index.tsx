@@ -3,6 +3,6 @@ export { ActiveBatches };
 
 function ActiveBatches() {
   return <section className="flex p-4 items-center bg-gray-300">
-      <p> {activeBatch}</p>
+      <p className='font-bold'> {activeBatch}</p>
     </section>
 }
