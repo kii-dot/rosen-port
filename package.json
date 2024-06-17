@@ -13,7 +13,8 @@
     "version": "npx changeset version && npm i"
   },
   "dependencies": {
-    "@changesets/cli": "^2.27.1"
+    "@changesets/cli": "^2.27.1",
+    "vite": "^5.0.10"
   },
   "devDependencies": {
     "@rosen-bridge/changeset-formatter": "^0.1.0",
