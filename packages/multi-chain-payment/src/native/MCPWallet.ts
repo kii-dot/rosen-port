@@ -33,6 +33,8 @@ interface IWallet {
   signAndSubmit: (
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
   ) => Promise<string>;
+
+  address: () => Promise<string>;
 }
 
 class ErgoWallet implements IWallet {
@@ -44,6 +46,10 @@ class ErgoWallet implements IWallet {
     this.nodeApi = new ErgoNodeAPI();
     // @todo kii make sure this is fixed, it should be in constructor?
     this.walletIndex = 0;
+  }
+
+  async address(): Promise<string> {
+    return this.wallet.getAddress(0);
   }
 
   async signAndSubmit(
@@ -112,6 +118,9 @@ class BitcoinWallet implements IWallet {
 
     throw new NotImplementedException();
   }
+  async address(): Promise<string> {
+    throw new NotImplementedException();
+  }
 }
 
 class CardanoWallet implements IWallet {
@@ -127,6 +136,10 @@ class CardanoWallet implements IWallet {
 
     // return result;
 
+    throw new NotImplementedException();
+  }
+
+  async address(): Promise<string> {
     throw new NotImplementedException();
   }
 }

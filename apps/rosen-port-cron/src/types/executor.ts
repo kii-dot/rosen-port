@@ -1,5 +1,4 @@
-import { Wallet } from '@rosen-port/db';
-import { DBClient } from '@rosen-port/db/dist/src/dbClient';
+import { Wallet, RosenPortDBClient } from '@rosen-port/db';
 
 abstract class Executor {
   abstract onBeforeExecute(): Promise<void>;
@@ -12,14 +11,29 @@ abstract class Executor {
   }
 }
 
+interface IWalletClient {
+  getWallet(chain: string): Promise<Wallet>;
+}
+
+class WalletClient implements IWalletClient {
+  dbClient: RosenPortDBClient;
+  constructor(dbClient: RosenPortDBClient) {
+    this.dbClient = dbClient;
+  }
+
+  async getWallet(chain: string): Promise<Wallet> {
+    return await this.dbClient.wallet.getWallet(chain);
+  }
+}
+
 abstract class PortExecutor extends Executor {
-  db: DBClient;
+  walletClient: IWalletClient;
 
   async getPortWallet(chain: string): Promise<Wallet> {
-    const rosenPortWalletAddress = await this.db.wallet.getWallet(chain);
+    const rosenPortWalletAddress = await this.walletClient.getWallet(chain);
 
     return rosenPortWalletAddress;
   }
 }
 
-export { Executor, PortExecutor };
+export { Executor, PortExecutor, IWalletClient, WalletClient };

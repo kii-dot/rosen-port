@@ -1,21 +1,27 @@
-import { dbClient } from '../../tools/db';
-import { Container, ContainerStatus } from '@rosen-port/db';
-import { TokenMap } from '@rosen-bridge/tokens';
+import { Container, ContainerStatus, RosenPortDBClient } from '@rosen-port/db';
 import { FundDistributor } from './FundDistributor';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
-import { tokenMap } from '../../tools/tokenMap';
+import { FundDistributorStoreClient } from './storeClient';
+import { WalletClient } from '../../types/executor';
+import { RosenUserInterface } from '@rosen/sdk';
 
 export class FundDistributorCronExecutor extends RosenPortCronExecutor {
-  tokenMap: TokenMap;
-  constructor(cronTimeString: string) {
+  rosenUserInterface: RosenUserInterface;
+  dbClient: RosenPortDBClient;
+  constructor(
+    cronTimeString: string,
+    rosenUserInterface: RosenUserInterface,
+    dbClient: RosenPortDBClient
+  ) {
     super(cronTimeString, CronCategory.FundDistributor);
-    this.tokenMap = tokenMap;
+    this.rosenUserInterface = rosenUserInterface;
+    this.dbClient = dbClient;
   }
 
   async getValidContainers(): Promise<Container[]> {
-    return await dbClient.container.getContainersViaStatus(
+    return await this.dbClient.container.getContainersViaStatus(
       ContainerStatus.bridged
     );
   }
@@ -30,12 +36,16 @@ export class FundDistributorCronExecutor extends RosenPortCronExecutor {
       `[FundDistributor] Retrieved ${containers.length} bridged containers to process`
     );
 
+    const fundDistributorStoreClient: FundDistributorStoreClient =
+      new FundDistributorStoreClient(this.dbClient);
+    const walletClient: WalletClient = new WalletClient(this.dbClient);
     // 2. For each container
     containers.forEach(async (container) => {
       const fundDistributor = new FundDistributor(
-        this.tokenMap,
         container,
-        dbClient
+        fundDistributorStoreClient,
+        this.rosenUserInterface,
+        walletClient
       );
       await fundDistributor.execute();
     });
