@@ -2,7 +2,13 @@ import { bridge } from './content';
 export { Bridge };
 
 function Bridge() {
-  return <section className="flex p-4 items-center bg-gray-300">
-        <p className="font-bold"> {bridge}</p>
+  return <section className="p-4">
+        <p className="text-gray-300 font-bold"> Origin Chain</p>
+        <select> 
+          <option>Ergo</option>
+          <option>ETH</option>
+          <option>BTC</option>
+          <option>ADA</option>
+        </select>
       </section>
 }

@@ -1,0 +1,1 @@
+export const activeBatch = "Active Batch"
