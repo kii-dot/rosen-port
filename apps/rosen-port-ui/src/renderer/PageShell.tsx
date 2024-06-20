@@ -30,10 +30,10 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function Content({ children }: { children: React.ReactNode }) {
   return (
-    <div
+    <div className='min-h-screen'
       style={{
         borderLeft: '2px solid #eee',
-        minHeight: '100vh',
+        //minHeight: '100vh',
       }}
     >
       {children}
