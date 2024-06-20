@@ -33,19 +33,19 @@ function Page() {
           <div className="relative isolate overflow-hidden px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
             <nav className="flex space-x-4">
               <p
-                className={`px-4 py-2 rounded-lg hover:border hover:bg-teal-800 ${activeTab === 'Tab1' ? 'text-teal-400' : 'text-gray-400'}`}
+                className={`px-4 py-2 rounded-lg hover:outline hover:bg-teal-800 ${activeTab === 'Tab1' ? 'text-teal-400' : 'text-gray-400'}`}
                 onClick={() => setActiveTab('Tab1')}
               >
                 Bridge
               </p>
               <button
-                className={`px-4 py-2 rounded-lg hover:border hover:bg-teal-800 ${activeTab === 'Tab2' ? 'text-teal-400' : 'text-gray-400'}`}
+                className={`px-4 py-2 rounded-lg hover:bg-teal-800 ${activeTab === 'Tab2' ? 'text-teal-400' : 'text-gray-400'}`}
                 onClick={() => setActiveTab('Tab2')}
               >
                 Transaction History
               </button>
               <button
-                className={`px-4 py-2 rounded-lg hover:border hover:bg-teal-800 ${activeTab === 'Tab3' ? 'text-teal-400' : 'text-gray-400'}`}
+                className={`px-4 py-2 rounded-lg hover:outline-double hover:bg-teal-800 ${activeTab === 'Tab3' ? 'text-teal-400' : 'text-gray-400'}`}
                 onClick={() => setActiveTab('Tab3')}
               >
                 Active Batches

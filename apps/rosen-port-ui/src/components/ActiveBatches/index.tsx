@@ -31,7 +31,7 @@ function ActiveBatches() {
       {Object.keys(dummyActiveBranches).map((keyName) => 
       {
         const data = dummyActiveBranches[keyName];
-        return (<div className='flex py-4 text-gray-200'>
+        return (<div className='flex py-4 text-gray-200 outline-teal-800 hover:outline'>
           <div className='w-1/4'>
               <p>{data.BridgeName}</p>
               <p>{data.BridgePath}</p>
