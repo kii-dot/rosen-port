@@ -38,7 +38,7 @@ function TransactionHistory() {
             <tbody>
               {Object.keys(dummyTransactionData).map((keyName) => {
                 return <>
-                  <tr className="text-white odd:bg-indigo-950 even:bg-indigo-900 opacity-60">
+                  <tr className="text-white hover:border odd:bg-indigo-950 even:bg-indigo-900 opacity-60">
                     <td>
                       {dummyTransactionData[keyName].Token}
                     </td>

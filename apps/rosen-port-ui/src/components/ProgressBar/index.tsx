@@ -6,7 +6,7 @@ const ProgressBar = ({ amount, goal}:{amount:number, goal:number}) => {
   const percentage = (amount/goal)*100;
   const numTicks = 50;
   const ticks = Array.from({ length: numTicks }, (_, index) => (
-    <div key={index} className={`w-1 h-full ${percentage >= (index + 1) * (100/numTicks) ? 'bg-teal-900' : 'bg-gray-300'}`}></div>
+    <div key={index} className={`w-1 h-full ${percentage >= (index + 1) * (100/numTicks) ? 'bg-teal-800' : 'bg-gray-300'}`}></div>
   ));
 
   return (
