@@ -9,27 +9,32 @@ import { NotImplementedException } from '@rosen-port/errors';
 import { IPortBridger } from './types';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
-import { PortExecutor } from '../../types/executor';
-import { RosenChains, RosenUserInterface } from '@rosen/sdk';
+import { IWalletClient, PortExecutor } from '../../types/executor';
+import { RosenChains, IRosenUserInterface, Fees, Networks } from '@rosen/sdk';
 import { MCPWallet } from '@rosen-port/multi-chain-payment';
 import { MNEMONIC } from '../../constants/mnemonicConstants';
+import { UnsignedTransaction } from 'ergo-lib-wasm-nodejs';
+import { CardanoUtxo } from '@rosen/sdk/dist/src/chains/cardano/types/cardanoTypes';
+import { ErgoBoxProxy } from '@rosen-ui/wallet-api';
 
 export class PortBridger extends PortExecutor implements IPortBridger {
   container: Container;
   db: RosenPortDBClient;
   bridgeTx: string = '';
   containerTxs: Tx[];
-  rosenUI: RosenUserInterface;
+  rosenUI: IRosenUserInterface;
 
   constructor(
     container: Container,
     db: RosenPortDBClient,
-    rosenUI: RosenUserInterface
+    rosenUI: IRosenUserInterface,
+    walletClient: IWalletClient
   ) {
     super();
     this.container = container;
     this.db = db;
     this.rosenUI = rosenUI;
+    this.walletClient = walletClient;
   }
 
   async onExecute(): Promise<void> {
@@ -149,7 +154,8 @@ export class PortBridger extends PortExecutor implements IPortBridger {
       // @ts-ignore
       container.sourceChain,
       container.tokenType.id,
-      container.destChain
+      container.destChain,
+      -1
     );
   }
 
@@ -232,15 +238,31 @@ export class PortBridger extends PortExecutor implements IPortBridger {
     // 3b. bridge the funds
     const destWalletAddress = this.getPortWallet(container.destChain);
     const sourceWalletAddress = this.getPortWallet(container.sourceChain);
-    const unsignedLockTx: string = await RosenChains.getLockTransaction(
-      // @ts-ignore
+    const fees: Fees = await this.rosenUI.getFeeByTransferAmount(
+      // @ts-ignore Networks
       container.sourceChain,
-      container.destChain,
-      destWalletAddress,
-      sourceWalletAddress,
       container.tokenType.id,
-      container.totalAmount
+      container.destChain,
+      container.totalAmount,
+      -1n,
+      -1
     );
+
+    // @todo kii Get the wallet utxo
+    const walletUtxo: Iterator<CardanoUtxo | ErgoBoxProxy, undefined> = null;
+    const unsignedLockTx: string | UnsignedTransaction =
+      await RosenChains.generateUnsignedBridgeTx(
+        // @ts-ignore
+        container.sourceChain,
+        container.destChain,
+        destWalletAddress,
+        sourceWalletAddress,
+        container.tokenType.id,
+        container.totalAmount,
+        fees.bridgeFee,
+        fees.networkFee,
+        walletUtxo
+      );
 
     // @ts-ignore
     const network = Networks[container.destChain];
@@ -248,6 +270,8 @@ export class PortBridger extends PortExecutor implements IPortBridger {
     const walletMnemonic = MNEMONIC[container.destChain];
     const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
 
+    // @todo kii create a converter from unsigned_transaction to EIP12UnsignedTransaction
+    // if the transaction is ergo
     // Sign and send txs
     const tx = await wallet.signAndSubmit(unsignedLockTx);
 

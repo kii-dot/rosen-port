@@ -1,3 +1,5 @@
+import { Refund } from '@rosen-port/db';
+
 /**
  * Interface for tool to process refunds
  */
@@ -11,19 +13,7 @@ export interface IRefundOperator {
    * @returns true represents refund is processed, false means
    *          refund failed to be processed
    */
-  refundTx: () => Promise<string>;
-
-  /**
-   * Checks to see if the service fee has been paid for the
-   * refund to begin processing
-   *
-   * @param serviceFeeTxId txId of the service fee payment
-   * @returns true represents confirmed, false represents unconfirmed
-   */
-  checkServiceFeeTxStatus: (
-    serviceFeeTxId: string,
-    network: string
-  ) => Promise<boolean>;
+  refundTx: (refund: Refund) => Promise<string>;
 
   /**
    * Checks if a tx is valid for refund purposes. If its valid, the
@@ -34,7 +24,7 @@ export interface IRefundOperator {
    * @returns true represents valid for refund, false means not valid
    *          for refund
    */
-  checkRefundValid: (txId: string) => Promise<boolean>;
+  ensureRefundValid: (refund: Refund) => Promise<void>;
 
   updateRefundTxInDb: (txId: string, refundedTxId: string) => Promise<boolean>;
 }

@@ -44,6 +44,7 @@ export enum RefundStatus {
   refund_initiated = 'refund_initiated',
   refund_service_fee_signed = 'refund_service_fee_signed',
   refund_in_process = 'refund_in_process',
+  refund_valid = 'refund_valid',
   refund_processed = 'refund_processed',
   refund_completed = 'refund_completed',
 }
