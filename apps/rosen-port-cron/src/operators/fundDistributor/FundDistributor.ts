@@ -2,6 +2,7 @@ import { Container, ContainerStatus, Tx, TxStatus } from '@rosen-port/db';
 import { IFundDistributor } from './types';
 import {
   FundsTo,
+  IMultiChainPayment,
   MCPWallet,
   MultiChainPayment,
 } from '@rosen-port/multi-chain-payment';
@@ -11,57 +12,64 @@ import { MNEMONIC } from '../../constants/mnemonicConstants';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { IWalletClient, PortExecutor } from '../../types/executor';
-import {
-  DBUpdateFailureException,
-  FundsNotBridgedException,
-} from '@rosen-port/errors';
+import { DBUpdateFailureException } from '@rosen-port/errors';
 import { IRosenUserInterface } from '@rosen/sdk';
-import { IFundDistributorStoreClient } from './storeClient';
+import { IContainerTxStoreClient } from './storeClient';
+import { FundsNotBridgedException } from '../../errors/bridgerErrors';
 
 export class FundDistributor extends PortExecutor implements IFundDistributor {
   container: Container;
   distributionTxId: string;
-  fundDistributorStoreClient: IFundDistributorStoreClient;
+  containerTxStoreClient: IContainerTxStoreClient;
   rosenUserInterface: IRosenUserInterface;
   txs: Tx[];
 
   constructor(
     container: Container,
-    fundDistributorStoreClient: IFundDistributorStoreClient,
+    containerTxStoreClient: IContainerTxStoreClient,
     rosenUserInterface: IRosenUserInterface,
     walletClient: IWalletClient
   ) {
     super();
     this.container = container;
     this.walletClient = walletClient;
-    this.fundDistributorStoreClient = fundDistributorStoreClient;
+    this.containerTxStoreClient = containerTxStoreClient;
     this.rosenUserInterface = rosenUserInterface;
   }
 
   async onExecute(): Promise<void> {
-    Logger.info(
-      '0',
-      CronCategory.FundDistributor,
-      '[FundDistributorCron] Distribute funds start'
-    );
+    try {
+      Logger.info(
+        '0',
+        CronCategory.FundDistributor,
+        '[FundDistributorCron] Distribute funds start'
+      );
 
-    this.distributionTxId = await this.distributeFunds(
-      this.container,
-      this.txs
-    );
+      this.distributionTxId = await this.distributeFunds(
+        this.container,
+        this.txs
+      );
 
-    if (this.distributionTxId === '') {
+      if (this.distributionTxId === '') {
+        Logger.error(
+          '0',
+          CronCategory.FundDistributor,
+          `[FundDistributorCron] Failure to distribute funds: ${this.distributionTxId}`
+        );
+      } else {
+        Logger.info(
+          '0',
+          CronCategory.FundDistributor,
+          `[FundDistributorCron] Funds Distributed with txId - ${this.distributionTxId}`
+        );
+      }
+    } catch (error) {
       Logger.error(
         '0',
         CronCategory.FundDistributor,
         `[FundDistributorCron] Failure to distribute funds: ${this.distributionTxId}`
       );
-    } else {
-      Logger.info(
-        '0',
-        CronCategory.FundDistributor,
-        `[FundDistributorCron] Funds Distributed with txId - ${this.distributionTxId}`
-      );
+      throw error;
     }
   }
 
@@ -117,9 +125,7 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
   }
 
   async getContainerTxs(container: Container): Promise<Tx[]> {
-    const txs = await this.fundDistributorStoreClient.getContainerTxs(
-      container.id
-    );
+    const txs = await this.containerTxStoreClient.getContainerTxs(container.id);
     return txs;
   }
 
@@ -159,17 +165,20 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
     });
 
     // @ts-ignore
-    const network = Networks[container.destChain];
-    const unsignedTx = await MultiChainPayment.disperse({
-      network,
-      sourceAddress: rosenPortWalletAddress.walletAddress,
-      to,
-    });
+    const network: keyof typeof Networks = Networks[container.destChain];
+    const multiChainPayment: IMultiChainPayment = new MultiChainPayment(
+      network
+    );
+    const unsignedTx = await multiChainPayment.disperse(
+      rosenPortWalletAddress.walletAddress,
+      to
+    );
 
     // create Wallet
     // @ts-ignore
     const walletMnemonic = MNEMONIC[container.destChain];
-    const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
+    const mcpWallet = new MCPWallet(network);
+    const wallet = mcpWallet.create(walletMnemonic);
 
     // Sign and send txs
     const tx = await wallet.signAndSubmit(unsignedTx);
@@ -185,11 +194,10 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
    *          represents failure to update db.
    */
   async updateDistributedTx(txId: string): Promise<boolean> {
-    const dbResult =
-      await this.fundDistributorStoreClient.updateDistributedTxId(
-        txId,
-        this.container.id
-      );
+    const dbResult = await this.containerTxStoreClient.updateDistributedTxId(
+      txId,
+      this.container.id
+    );
 
     var isAllUpdated: boolean = true;
 

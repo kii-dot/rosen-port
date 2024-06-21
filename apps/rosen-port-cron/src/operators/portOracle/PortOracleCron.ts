@@ -3,7 +3,7 @@ import { CronCategory } from '../../constants/cronConstants';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
 import { RosenPortDBClient } from '@rosen-port/db';
 
-export class StatusCheckerCronExecutor extends RosenPortCronExecutor {
+export class PortOracleCronExecutor extends RosenPortCronExecutor {
   rosenUI: RosenUserInterface;
   dbClient: RosenPortDBClient;
 

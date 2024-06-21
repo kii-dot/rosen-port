@@ -1,15 +1,13 @@
 import { Refund, RefundStatus, RosenPortDBClient } from '@rosen-port/db';
 import { IRefundOperator } from './types';
 import { IWalletClient, PortExecutor } from '../../types/executor';
-import {
-  DBUpdateFailureException,
-  NotImplementedException,
-} from '@rosen-port/errors';
+import { DBUpdateFailureException } from '@rosen-port/errors';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { IRefundTxChecker } from './refundTxChecker';
 import {
   FundsTo,
+  IMultiChainPayment,
   MCPWallet,
   MultiChainPayment,
 } from '@rosen-port/multi-chain-payment';
@@ -17,6 +15,10 @@ import { Networks } from '@rosen-port/chains';
 import { IRosenUserInterface } from '@rosen/sdk';
 import { RosenChainToken } from '@rosen-bridge/tokens';
 import { IRefundStoreClient } from './storeClient';
+import {
+  RefundInvalidException,
+  RefundServiceFeeNotConfirmedException,
+} from '../../errors/refundErrors';
 
 export class RefundOperator extends PortExecutor implements IRefundOperator {
   refund: Refund;
@@ -58,6 +60,7 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
         CronCategory.RefundOperator,
         `[RefundOperator] Refund failed with error: ${error}`
       );
+      throw error;
     }
   }
 
@@ -90,7 +93,9 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
     );
 
     if (!isServiceFeePaid) {
-      throw new Error('Service fee has not been paid');
+      throw new RefundServiceFeeNotConfirmedException(
+        `Refund ServiceFee unconfirmed: ${refund.id}`
+      );
     }
 
     const isRefundValid = await this.refundTxChecker.isRefundValid(
@@ -103,7 +108,7 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
         CronCategory.RefundOperator,
         `[RefundOperator] Refund invalid`
       );
-      throw new Error('Refund not valid');
+      throw new RefundInvalidException(`Refund Invalid: ${refund.id}`);
     }
   }
 
@@ -131,7 +136,7 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
       );
 
     // @ts-ignore
-    const network = Networks[refund.container.destChain];
+    const network: keyof typeof Networks = Networks[refund.container.destChain];
     const fundsTo: FundsTo = {
       token: rosenChainToken[container.destChain],
       // Note: The tx.amount from Tx is the exact amount transferred
@@ -139,13 +144,14 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
       decimalAmount: refund.txToRefund.amount,
       toAddress: refund.txToRefund.destAddress,
     };
-
     // 2bii. create MCPWallet to send funds back
-    const unsignedTx = await MultiChainPayment.sendTo({
-      network,
-      sourceAddress: rosenPortWalletAddress.walletAddress,
-      to: fundsTo,
-    });
+    const multiChainPayment: IMultiChainPayment = new MultiChainPayment(
+      network
+    );
+    const unsignedTx = await multiChainPayment.sendTo(
+      rosenPortWalletAddress.walletAddress,
+      fundsTo
+    );
 
     Logger.info(
       '',
@@ -156,7 +162,8 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
     // create Wallet
     // @ts-ignore
     const walletMnemonic = MNEMONIC[container.destChain];
-    const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
+    const mcpWallet = new MCPWallet(network);
+    const wallet = mcpWallet.create(walletMnemonic);
     const walletAddress = await wallet.address();
 
     Logger.info(
@@ -169,16 +176,16 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
   }
 
   /**
-   *
-   * @param txId TxId to refund
+   * @param txIdToRefund TxId to refund
+   * @param refundTxId the txId of the refund that was made
    * @returns
    */
   async updateRefundTxInDb(
-    txId: string,
+    txIdToRefund: string,
     refundedTxId: string
   ): Promise<boolean> {
     const dbUpdated = await this.refundClient.updateRefund(
-      txId,
+      txIdToRefund,
       refundedTxId,
       RefundStatus.refund_in_process
     );
@@ -187,10 +194,12 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
       return true;
     }
 
-    const failureMessage: string = `[RefundOperator] update refundedTx failed, Transaction to refund ${txId}, refundedTxId ${refundedTxId}`;
+    const failureMessage: string =
+      `[RefundOperator] update refundedTx failed, Transaction to ` +
+      `refund ${txIdToRefund}, refundedTxId ${refundedTxId}`;
 
     Logger.error('', CronCategory.RefundOperator, failureMessage, {
-      txIdToRefund: txId,
+      txIdToRefund: txIdToRefund,
       refundedTxId: refundedTxId,
     });
     throw new DBUpdateFailureException(failureMessage);

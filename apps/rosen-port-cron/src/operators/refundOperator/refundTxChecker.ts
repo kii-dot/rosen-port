@@ -5,6 +5,7 @@ import {
 } from '../../constants/feeConstants';
 import { ExplorersFactory } from '../../tools/explorer';
 import { IRefundStoreClient } from './storeClient';
+import { NotImplementedException } from '@rosen-port/errors';
 
 export interface IRefundTxChecker {
   /**
@@ -69,7 +70,7 @@ export class RefundTxChecker implements IRefundTxChecker {
   async isRefundValid(txId: string): Promise<boolean> {
     return (
       (await this.refundStoreClient.getRefundStatus(txId)) ===
-      RefundStatus.refund_in_process
+      RefundStatus.refund_valid
     );
   }
 
@@ -102,5 +103,7 @@ export class RefundTxChecker implements IRefundTxChecker {
     }
   }
 
-  async cardanoNetworkCheck(serviceFeeTxId: string): Promise<boolean> {}
+  async cardanoNetworkCheck(serviceFeeTxId: string): Promise<boolean> {
+    throw new NotImplementedException();
+  }
 }

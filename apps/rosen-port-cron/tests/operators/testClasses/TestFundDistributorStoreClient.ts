@@ -1,53 +1,34 @@
-import { Tx, TxStatus } from '@rosen-port/db';
-import { IFundDistributorStoreClient } from '../../../src/operators/fundDistributor/storeClient';
+import { Container, ContainerStatus, Tx, TxStatus } from '@rosen-port/db';
+import { IContainerTxStoreClient } from '../../../src/operators/fundDistributor/storeClient';
+import { bridgedTxs, confirmedTxs } from '../mock';
+import { NotImplementedException } from '@rosen-port/errors';
 
-export const unbridgedTxs = [
-  new Tx({
-    id: 'confirmedTx2',
-    createdAt: '2024-06-20T12:00:00Z',
-    initiatedTxId: 'init1',
-    amount: 1000,
-    sourceAddress: 'addr1',
-    destAddress: 'addr2',
-    txStatus: TxStatus.confirmed,
-    distributedTxId: '',
-    containerId: 'confirmedContainer',
-  }),
-
-  new Tx({
-    id: 'confirmedTx2',
-    createdAt: '2024-06-20T12:00:00Z',
-    initiatedTxId: 'init1',
-    amount: 1000,
-    sourceAddress: 'addr1',
-    destAddress: 'addr2',
-    txStatus: TxStatus.confirmed,
-    distributedTxId: '',
-    containerId: 'confirmedContainer',
-  }),
-];
-
-export const bridgedTxs: Tx[] = [
-  new Tx({
-    id: 'bridgedTx',
-    createdAt: '2024-06-20T12:10:00Z',
-    initiatedTxId: 'init2',
-    amount: 200,
-    sourceAddress: 'addr3',
-    destAddress: 'addr4',
-    txStatus: TxStatus.bridged,
-    distributedTxId: 'dist2',
-    containerId: 'bridgedContainer',
-  }),
-];
-
-export class TestFundDistributorStoreClient
-  implements IFundDistributorStoreClient
-{
+export class TestContainerTxStoreClient implements IContainerTxStoreClient {
   private txStore: Tx[];
+  private containerStore: Container[];
 
   constructor() {
     this.txStore = []; // Initializes an empty array to store Tx objects.
+    this.containerStore = [];
+  }
+
+  async updateContainerStatus(
+    containerId: string,
+    containerStatus: ContainerStatus
+  ): Promise<Container> {
+    this.containerStore = this.containerStore.map((container) => {
+      if (container.id === containerId) {
+        return { ...container, txStatus: containerStatus };
+      }
+      return container;
+    });
+
+    const container = this.containerStore.filter(
+      (container) => container.id === containerId
+    );
+
+    if (container.length > 0) return container[0];
+    else throw new Error(`No container found for ${containerId}`);
   }
 
   async getContainerTxs(id: string): Promise<Tx[]> {
@@ -77,11 +58,11 @@ export class TestFundDistributorStoreClient
   }
 }
 
-export class TestFundDistributorStoreClientFactory {
-  static generate(): TestFundDistributorStoreClient {
-    const testClient = new TestFundDistributorStoreClient();
+export class TestContainerTxStoreClientFactory {
+  static generate(): IContainerTxStoreClient {
+    const testClient = new TestContainerTxStoreClient();
 
-    unbridgedTxs.forEach((tx) => {
+    confirmedTxs.forEach((tx) => {
       testClient.addTransaction(tx);
     });
 

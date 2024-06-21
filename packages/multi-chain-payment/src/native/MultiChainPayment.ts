@@ -3,26 +3,16 @@ import { UnsignedPsbtData, Networks } from '@rosen-port/chains';
 import { ChainTxFactory } from './chains/ChainTxFactory';
 import { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 
-interface IMultiChainPayment {
-  sendTo: ({
-    network,
-    sourceAddress,
-    to,
-  }: {
-    network: keyof typeof Networks;
-    sourceAddress: string;
-    to: FundsTo;
-  }) => Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction>;
+export interface IMultiChainPayment {
+  sendTo: (
+    sourceAddress: string,
+    to: FundsTo
+  ) => Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction>;
 
-  disperse: ({
-    network,
-    to,
-    sourceAddress,
-  }: {
-    network: keyof typeof Networks;
-    sourceAddress: string;
-    to: Array<FundsTo>;
-  }) => Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction>;
+  disperse: (
+    sourceAddress: string,
+    to: Array<FundsTo>
+  ) => Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction>;
 }
 
 /**
@@ -31,37 +21,31 @@ interface IMultiChainPayment {
  * This class focuses on creating the send txs required for a certain
  * chain.
  */
-@staticImplements<IMultiChainPayment>()
-export class MultiChainPayment {
-  static async sendTo({
-    network,
-    sourceAddress,
-    to,
-  }: {
-    network: keyof typeof Networks;
-    sourceAddress: string;
-    to: FundsTo;
-  }): Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction> {
-    const chainTx: IChainTx = ChainTxFactory.getChainTx(sourceAddress, network);
+export class MultiChainPayment implements IMultiChainPayment {
+  network: keyof typeof Networks;
+  constructor(network: keyof typeof Networks) {
+    this.network = network;
+  }
+
+  async sendTo(
+    sourceAddress: string,
+    to: FundsTo
+  ): Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction> {
+    const chainTx: IChainTx = ChainTxFactory.getChainTx(
+      sourceAddress,
+      this.network
+    );
     return await chainTx.generateTransferUnsignedTx(to);
   }
 
-  static async disperse({
-    network,
-    sourceAddress,
-    to,
-  }: {
-    network: keyof typeof Networks;
-    sourceAddress: string;
-    to: Array<FundsTo>;
-  }): Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction> {
-    const chainTx: IChainTx = ChainTxFactory.getChainTx(sourceAddress, network);
+  async disperse(
+    sourceAddress: string,
+    to: FundsTo[]
+  ): Promise<string | UnsignedPsbtData | EIP12UnsignedTransaction> {
+    const chainTx: IChainTx = ChainTxFactory.getChainTx(
+      sourceAddress,
+      this.network
+    );
     return await chainTx.generateDisperseUnsignedTxs(to);
   }
-}
-
-function staticImplements<T>() {
-  return <U extends T>(constructor: U) => {
-    constructor;
-  };
 }

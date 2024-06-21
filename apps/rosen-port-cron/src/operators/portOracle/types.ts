@@ -4,7 +4,7 @@ import { ContainerStatus, RefundStatus, TxStatus } from '@rosen-port/db';
  * Interface for the Status Update Cron functionality.
  * This interface defines the responsibilities for updating and checking the statuses of transactions, containers, and refunds.
  */
-export interface IStatusChecker {
+export interface IPortOracle {
   /** Retrieves the current status of a transaction using its unique identifier. */
   checkTransactionStatus(transactionId: string): TxStatus;
 

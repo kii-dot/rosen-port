@@ -8,15 +8,18 @@ import {
   ErgoNodeAPI,
 } from '@rosen-port/ergo-explorer-node';
 
-export class MCPWallet {
-  static create({
-    network,
-    mnemonic,
-  }: {
-    network: keyof typeof Networks;
-    mnemonic: string;
-  }) {
-    switch (network) {
+export interface IMCPWallet {
+  create(mnemonic: string): IWallet;
+}
+
+export class MCPWallet implements IMCPWallet {
+  network: keyof typeof Networks;
+  constructor(network: keyof typeof Networks) {
+    this.network = network;
+  }
+
+  create(mnemonic: string): IWallet {
+    switch (this.network) {
       case Networks.ergo:
         return new ErgoWallet(mnemonic);
       case Networks.cardano:
@@ -24,12 +27,12 @@ export class MCPWallet {
       case Networks.bitcoin:
         return new BitcoinWallet(mnemonic);
       default:
-        throw new ChainNotImplementedError(network);
+        throw new ChainNotImplementedError(this.network);
     }
   }
 }
 
-interface IWallet {
+export interface IWallet {
   signAndSubmit: (
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
   ) => Promise<string>;

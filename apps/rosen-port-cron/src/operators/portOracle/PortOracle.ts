@@ -1,9 +1,15 @@
 import { NotImplementedException } from '@rosen-port/errors';
 import { Executor } from '../../types/executor';
-import { IStatusChecker } from './types';
-import { TxStatus, ContainerStatus, RefundStatus } from '@rosen-port/db';
+import { IPortOracle } from './types';
+import {
+  TxStatus,
+  ContainerStatus,
+  RefundStatus,
+  Container,
+  Tx,
+} from '@rosen-port/db';
 
-export class StatusChecker extends Executor implements IStatusChecker {
+export class PortOracle extends Executor implements IPortOracle {
   checkTransactionStatus(transactionId: string): TxStatus {
     throw new Error('Method not implemented.');
   }

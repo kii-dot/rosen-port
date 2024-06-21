@@ -35,6 +35,7 @@ export enum TxStatus {
 /**
  * refund_initiated -> User initiated refund (ServiceFeeTxId entered)
  * refund_service_fee_signed -> User has signed the tx for service fee payment
+ * refund_valid -> The refund is confirmed by oracle and is valid
  * refund_in_process -> service fee payment is confirmed, and refund cron job
  *                      starts processing refund
  * refund_processed -> refund of amount sent out, but not confirmed
@@ -43,8 +44,8 @@ export enum TxStatus {
 export enum RefundStatus {
   refund_initiated = 'refund_initiated',
   refund_service_fee_signed = 'refund_service_fee_signed',
-  refund_in_process = 'refund_in_process',
   refund_valid = 'refund_valid',
+  refund_in_process = 'refund_in_process',
   refund_processed = 'refund_processed',
   refund_completed = 'refund_completed',
 }
