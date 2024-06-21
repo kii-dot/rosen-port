@@ -1,10 +1,4 @@
-import {
-  Container,
-  RosenPortDBClient,
-  Tx,
-  TxStatus,
-  ContainerStatus,
-} from '@rosen-port/db';
+import { Container, Tx, TxStatus, ContainerStatus } from '@rosen-port/db';
 import { NotImplementedException } from '@rosen-port/errors';
 import { IPortBridger } from './types';
 import { Logger } from '../../logging';
@@ -16,29 +10,45 @@ import { MNEMONIC } from '../../constants/mnemonicConstants';
 import { UnsignedTransaction } from 'ergo-lib-wasm-nodejs';
 import { CardanoUtxo } from '@rosen/sdk/dist/src/chains/cardano/types/cardanoTypes';
 import { ErgoBoxProxy } from '@rosen-ui/wallet-api';
+import { IContainerTxStoreClient } from '../fundDistributor/storeClient';
 
 export class PortBridger extends PortExecutor implements IPortBridger {
   container: Container;
-  db: RosenPortDBClient;
+  containerTxStoreClient: IContainerTxStoreClient;
   bridgeTx: string = '';
   containerTxs: Tx[];
   rosenUI: IRosenUserInterface;
 
   constructor(
     container: Container,
-    db: RosenPortDBClient,
+    containerTxStoreClient: IContainerTxStoreClient,
     rosenUI: IRosenUserInterface,
     walletClient: IWalletClient
   ) {
     super();
     this.container = container;
-    this.db = db;
+    this.containerTxStoreClient = containerTxStoreClient;
     this.rosenUI = rosenUI;
     this.walletClient = walletClient;
   }
 
   async onExecute(): Promise<void> {
-    this.bridgeTx = await this.bridgeContainer(this.container);
+    try {
+      this.bridgeTx = await this.bridgeContainer(this.container);
+
+      Logger.info(
+        '0',
+        CronCategory.PortBridger,
+        '[PortBridger] Bridging was successful'
+      );
+    } catch (error) {
+      Logger.error(
+        '0',
+        CronCategory.PortBridger,
+        `[PortBridger] Bridging failed with error: ${error}`
+      );
+      throw error;
+    }
   }
 
   /**
@@ -135,6 +145,10 @@ export class PortBridger extends PortExecutor implements IPortBridger {
     );
   }
 
+  /**
+   * Check the service to see if wallet is funded
+   * @param container the container to be bridged
+   */
   async isWalletFunded(container: Container): Promise<boolean> {
     throw new NotImplementedException();
   }
@@ -170,7 +184,9 @@ export class PortBridger extends PortExecutor implements IPortBridger {
    */
   async isContainerFilled(container: Container): Promise<boolean> {
     // 1. Get txs
-    this.containerTxs = await this.db.tx.getContainerTxs(container.id);
+    this.containerTxs = await this.containerTxStoreClient.getContainerTxs(
+      container.id
+    );
 
     // 2. Check if all tx is confirmed
     // If not all tx is confirmed, we stop the
@@ -268,7 +284,8 @@ export class PortBridger extends PortExecutor implements IPortBridger {
     const network = Networks[container.destChain];
     // @ts-ignore
     const walletMnemonic = MNEMONIC[container.destChain];
-    const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
+    const mcpWallet = new MCPWallet(network);
+    const wallet = mcpWallet.create(walletMnemonic);
 
     // @todo kii create a converter from unsigned_transaction to EIP12UnsignedTransaction
     // if the transaction is ergo
@@ -287,7 +304,7 @@ export class PortBridger extends PortExecutor implements IPortBridger {
    * @returns whether the db was updated
    */
   async updateContainerStatus(containerId: string): Promise<boolean> {
-    const container = this.db.container.updateContainerStatus(
+    const container = this.containerTxStoreClient.updateContainerStatus(
       containerId,
       ContainerStatus.bridging
     );

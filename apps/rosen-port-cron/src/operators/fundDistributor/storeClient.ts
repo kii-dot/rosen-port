@@ -1,16 +1,26 @@
-import { RosenPortDBClient, Tx, TxStatus } from '@rosen-port/db';
+import {
+  Container,
+  ContainerStatus,
+  RosenPortDBClient,
+  Tx,
+  TxStatus,
+} from '@rosen-port/db';
 
 /**
  * This class is needed to use as an injection method into FundDistributor.
  * For testing purposes and for simplification, to prevent DBClient from
  * getting too bulky
  */
-export interface IFundDistributorStoreClient {
+export interface IContainerTxStoreClient {
   getContainerTxs(id: string): Promise<Tx[]>;
   updateDistributedTxId(txId: string, containerId: string): Promise<Tx[]>;
+  updateContainerStatus(
+    containerId: string,
+    containerStatus: ContainerStatus
+  ): Promise<Container>;
 }
 
-export class FundDistributorStoreClient implements IFundDistributorStoreClient {
+export class ContainerTxStoreClient implements IContainerTxStoreClient {
   dbClient: RosenPortDBClient;
   constructor(dbClient: RosenPortDBClient) {
     this.dbClient = dbClient;
@@ -18,6 +28,18 @@ export class FundDistributorStoreClient implements IFundDistributorStoreClient {
 
   async getContainerTxs(id: string): Promise<Tx[]> {
     return await this.dbClient.tx.getContainerTxs(id);
+  }
+
+  async updateContainerStatus(
+    containerId: string,
+    containerStatus: ContainerStatus
+  ): Promise<Container> {
+    const container = await this.dbClient.container.updateContainerStatus(
+      containerId,
+      containerStatus
+    );
+
+    return container;
   }
 
   /**

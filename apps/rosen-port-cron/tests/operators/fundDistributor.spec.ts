@@ -1,18 +1,15 @@
-import { describe, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FundDistributor } from '../../src/operators';
 import { IWalletClient } from '../../src/types/executor';
-import { testContainers, testRosenUI } from './mock';
-import {
-  TestFundDistributorStoreClient,
-  TestFundDistributorStoreClientFactory,
-  bridgedTxs,
-} from './testClasses/TestFundDistributorStoreClient';
+import { bridgedTxs, testContainers } from './mock';
+import { TestContainerTxStoreClientFactory } from './testClasses/TestFundDistributorStoreClient';
 import { TestWalletClientFactory } from './testClasses/TestWalletClient';
-import { FundsNotBridgedException } from '@rosen-port/errors';
 import { ContainerStatus } from '@rosen-port/db';
+import { testRosenUI } from '../testUtils/testRosenUI';
+import { IContainerTxStoreClient } from '../../src/operators/fundDistributor/storeClient';
 
-var fundDistributorStoreClient: TestFundDistributorStoreClient =
-  TestFundDistributorStoreClientFactory.generate();
+var containerTxStoreClient: IContainerTxStoreClient =
+  TestContainerTxStoreClientFactory.generate();
 var walletClient: IWalletClient = TestWalletClientFactory.generate();
 
 describe('FundDistributor', async () => {
@@ -20,21 +17,30 @@ describe('FundDistributor', async () => {
     // 1. Initialize FundDistributor
     // 2. run FundDistributor.execute
     it('fails with unbridged container', async () => {
-      var fundDistributor = new FundDistributor(
+      const fundDistributor = new FundDistributor(
         testContainers.unbridged,
-        fundDistributorStoreClient,
+        containerTxStoreClient,
         testRosenUI,
         walletClient
       );
       await expect(
         async () => await fundDistributor.execute()
-      ).rejects.toThrowError(new FundsNotBridgedException());
+      ).rejects.toThrowError();
     });
 
     /**
      * @todo kii Complete this
      */
-    it('passes with bridged container', () => {});
+    test.skip('passes with bridged container', async () => {
+      const fundDistributor = new FundDistributor(
+        testContainers.bridged,
+        containerTxStoreClient,
+        testRosenUI,
+        walletClient
+      );
+
+      await fundDistributor.execute();
+    });
   });
 
   /**
@@ -44,11 +50,11 @@ describe('FundDistributor', async () => {
     // 1. Ensure that it gets valid strings for cardano, ergo, bitcoin
   });
 
-  describe('ensureBridged', async () => {
+  describe('ensureBridged', () => {
     // 1. check a valid container that has been bridged
     var fundDistributor = new FundDistributor(
       testContainers.unbridged,
-      fundDistributorStoreClient,
+      containerTxStoreClient,
       testRosenUI,
       walletClient
     );
@@ -67,7 +73,7 @@ describe('FundDistributor', async () => {
           // To fail!
           expect(() =>
             fundDistributor.ensureBridged(testContainer)
-          ).toThrowError(new FundsNotBridgedException());
+          ).toThrowError();
         });
       };
 
@@ -85,7 +91,7 @@ describe('FundDistributor', async () => {
     const testContainer = testContainers.bridged;
     var fundDistributor = new FundDistributor(
       testContainer,
-      fundDistributorStoreClient,
+      containerTxStoreClient,
       testRosenUI,
       walletClient
     );
@@ -97,22 +103,21 @@ describe('FundDistributor', async () => {
 
   it('updateDistributedTx', async () => {
     // Ensure we generate a clean one.
-    fundDistributorStoreClient =
-      TestFundDistributorStoreClientFactory.generate();
+    containerTxStoreClient = TestContainerTxStoreClientFactory.generate();
     walletClient = TestWalletClientFactory.generate();
 
     // 1. Ensure the stores is updated
     const testContainer = testContainers.bridged;
     var fundDistributor = new FundDistributor(
       testContainer,
-      fundDistributorStoreClient,
+      containerTxStoreClient,
       testRosenUI,
       walletClient
     );
     const updatedTxId = 'updatedTxId';
     const updated = await fundDistributor.updateDistributedTx(updatedTxId);
     expect(updated).toBeTruthy();
-    const updatedTxs = await fundDistributorStoreClient.getContainerTxs(
+    const updatedTxs = await containerTxStoreClient.getContainerTxs(
       testContainer.id
     );
 

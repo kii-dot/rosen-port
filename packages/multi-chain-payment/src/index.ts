@@ -4,12 +4,5 @@
 // token amount) and it should create a payment
 // transaction for users. Either through wallet
 // or through providing a QR code.
-import { MCPWallet, MultiChainPayment } from './native';
-import { FundsTo } from './types/ChainTxs';
-
-export {
-  MultiChainPayment,
-  MCPWallet,
-  // types
-  FundsTo,
-};
+export * from './native';
+export * from './types/ChainTxs';

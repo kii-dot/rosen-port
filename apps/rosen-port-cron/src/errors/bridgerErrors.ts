@@ -1,7 +1,7 @@
-type CronErrorName = 'FUNDS_NOT_BRIDGED_EXCEPTION';
+type BridgeErrorName = 'FUNDS_NOT_BRIDGED_EXCEPTION';
 
 export class CronError extends Error {
-  name: CronErrorName;
+  name: BridgeErrorName;
   message: string;
   cause: any;
 
@@ -10,7 +10,7 @@ export class CronError extends Error {
     message,
     cause,
   }: {
-    name: CronErrorName;
+    name: BridgeErrorName;
     message: string;
     cause?: any;
   }) {
