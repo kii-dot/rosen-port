@@ -14,7 +14,7 @@ enum PageTabs {
 }
 
 function Page() {
-  const [activeTab, setActiveTab] = useState(PageTabs.BridgeTab);
+  const [activeTab, setActiveTab] = useState(PageTabs.ActiveBatchesTab);
 
   let ActiveComponent: React.FC;
   switch (activeTab) {
