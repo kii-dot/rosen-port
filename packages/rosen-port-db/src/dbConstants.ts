@@ -65,8 +65,9 @@ export enum ContainerStatus {
   initiated = 'initiated',
   filling_in_progress = 'filling_in_progress',
   filled = 'filled',
-  bridged = 'bridged',
+  bridge_tx_sent = 'bridge_tx_sent',
   bridging = 'bridging',
+  bridged = 'bridged',
   fund_distribution_in_progress = 'fund_distribution_in_progress',
   funds_distributed = 'fund_distributed',
 }

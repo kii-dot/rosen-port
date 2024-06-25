@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { PortBridger } from '../../src/operators';
 import { IContainerTxStoreClient } from '../../src/operators/fundDistributor/storeClient';
-import { IWalletClient } from '../../src/types/executor';
 import { testRosenUI } from '../testUtils/testRosenUI';
 import { TestContainerTxStoreClientFactory } from './testClasses/TestFundDistributorStoreClient';
 import { TestWalletClientFactory } from './testClasses/TestWalletClient';
+import { IWalletClient } from '../../src/operators/utils/WalletClient';
 
 var containerTxStoreClient: IContainerTxStoreClient =
   TestContainerTxStoreClientFactory.generate();

@@ -3,7 +3,8 @@ import { Container, ContainerStatus, RosenPortDBClient } from '@rosen-port/db';
 import { PortBridger } from './PortBridger';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
 import { RosenUserInterface } from '@rosen/sdk';
-import { WalletClient } from '../../types/executor';
+import { ContainerTxStoreClient } from '../fundDistributor/storeClient';
+import { WalletClient } from '../utils/WalletClient';
 
 /**
  * The goal of this cron job is to:
@@ -35,11 +36,14 @@ export class PortBridgerCronExecutor extends RosenPortCronExecutor {
     const containers = await this.getValidContainers();
     const walletClient = new WalletClient(this.dbClient);
 
+    const containerTxStoreClient: ContainerTxStoreClient =
+      new ContainerTxStoreClient(this.dbClient);
+
     // 2. For each containers
     containers.forEach(async (container) => {
       const portBridger = new PortBridger(
         container,
-        this.dbClient,
+        containerTxStoreClient,
         this.rosenUI,
         walletClient
       );

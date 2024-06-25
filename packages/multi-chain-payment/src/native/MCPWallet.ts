@@ -7,6 +7,8 @@ import {
   Wallet as ErgoBackendWallet,
   ErgoNodeAPI,
 } from '@rosen-port/ergo-explorer-node';
+import { ErgoBoxProxy } from '@rosen-ui/wallet-api';
+import { CardanoUtxo } from '@rosen/sdk';
 
 export interface IMCPWallet {
   create(mnemonic: string): IWallet;
@@ -38,6 +40,8 @@ export interface IWallet {
   ) => Promise<string>;
 
   address: () => Promise<string>;
+
+  getUtxos: () => Promise<ErgoBoxProxy[] | CardanoUtxo[]>;
 }
 
 class ErgoWallet implements IWallet {
@@ -49,6 +53,10 @@ class ErgoWallet implements IWallet {
     this.nodeApi = new ErgoNodeAPI();
     // @todo kii make sure this is fixed, it should be in constructor?
     this.walletIndex = 0;
+  }
+
+  async getUtxos(): Promise<ErgoBoxProxy[] | CardanoUtxo[]> {
+    throw new NotImplementedException();
   }
 
   async address(): Promise<string> {
@@ -124,10 +132,17 @@ class BitcoinWallet implements IWallet {
   async address(): Promise<string> {
     throw new NotImplementedException();
   }
+  async getUtxos(): Promise<ErgoBoxProxy[] | CardanoUtxo[]> {
+    throw new NotImplementedException();
+  }
 }
 
 class CardanoWallet implements IWallet {
   constructor(mnemonic: string) {}
+  async getUtxos(): Promise<ErgoBoxProxy[] | CardanoUtxo[]> {
+    throw new NotImplementedException();
+  }
+
   async signAndSubmit(
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
   ): Promise<string> {

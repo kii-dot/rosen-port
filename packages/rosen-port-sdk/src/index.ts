@@ -7,3 +7,4 @@ import { RosenPortSDK } from './RosenPortSDK';
 import { REFUND_SERVICE_FEE } from './constants/serviceFee';
 
 export { RosenPortSDK, REFUND_SERVICE_FEE };
+export * from './chains/chains';

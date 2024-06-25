@@ -1,21 +1,18 @@
 import { Container, ContainerStatus, Tx, TxStatus } from '@rosen-port/db';
 import { IFundDistributor } from './types';
-import {
-  FundsTo,
-  IMultiChainPayment,
-  MCPWallet,
-  MultiChainPayment,
-} from '@rosen-port/multi-chain-payment';
+import { FundsTo, IMultiChainPayment } from '@rosen-port/multi-chain-payment';
 import { RosenChainToken } from '@rosen-bridge/tokens';
 import { Networks } from '@rosen-port/chains';
-import { MNEMONIC } from '../../constants/mnemonicConstants';
+import { MNEMONIC, getMnemonic } from '../../constants/mnemonicConstants';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
-import { IWalletClient, PortExecutor } from '../../types/executor';
+import { PortExecutor } from '../../types/executor';
 import { DBUpdateFailureException } from '@rosen-port/errors';
 import { IRosenUserInterface } from '@rosen/sdk';
 import { IContainerTxStoreClient } from './storeClient';
 import { FundsNotBridgedException } from '../../errors/bridgerErrors';
+import { IWalletClient } from '../utils/WalletClient';
+import { getNetworks } from '../utils/networks';
 
 export class FundDistributor extends PortExecutor implements IFundDistributor {
   container: Container;
@@ -23,6 +20,7 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
   containerTxStoreClient: IContainerTxStoreClient;
   rosenUserInterface: IRosenUserInterface;
   txs: Tx[];
+  destChainNetwork: keyof typeof Networks;
 
   constructor(
     container: Container,
@@ -35,6 +33,9 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
     this.walletClient = walletClient;
     this.containerTxStoreClient = containerTxStoreClient;
     this.rosenUserInterface = rosenUserInterface;
+    // In FundDistributor, we've already landed on destchain side and
+    // do not need to bother about sourceChain side
+    this.destChainNetwork = getNetworks(container.destChain);
   }
 
   async onExecute(): Promise<void> {
@@ -147,14 +148,14 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
         container.destChain
       );
 
-    const rosenPortWalletAddress = await this.getPortWallet(
+    const rosenPortWalletAddress = await this.getPortWalletInfo(
       this.container.destChain
     );
 
     txs.forEach(async (tx) => {
       if (tx.txStatus === TxStatus.bridged) {
         const fundsTo = {
-          token: token[container.destChain],
+          token: token[this.destChainNetwork],
           // Note: The tx.amount from Tx is the exact amount transferred
           // that has taken decimals into account.
           decimalAmount: tx.amount,
@@ -164,20 +165,18 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
       }
     });
 
-    // @ts-ignore
-    const network: keyof typeof Networks = Networks[container.destChain];
-    const multiChainPayment: IMultiChainPayment = new MultiChainPayment(
-      network
-    );
+    const network: keyof typeof Networks = getNetworks(this.destChainNetwork);
+    this.walletClient.setNetwork(network);
+    const multiChainPayment: IMultiChainPayment =
+      this.walletClient.getMultiChainPayment();
     const unsignedTx = await multiChainPayment.disperse(
       rosenPortWalletAddress.walletAddress,
       to
     );
 
     // create Wallet
-    // @ts-ignore
-    const walletMnemonic = MNEMONIC[container.destChain];
-    const mcpWallet = new MCPWallet(network);
+    const walletMnemonic = getMnemonic(this.destChainNetwork);
+    const mcpWallet = this.walletClient.getMCPWallet();
     const wallet = mcpWallet.create(walletMnemonic);
 
     // Sign and send txs
