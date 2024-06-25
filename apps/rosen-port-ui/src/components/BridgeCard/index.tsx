@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { UserCircleIcon, ChevronDownIcon } from '@heroicons/react/20/solid';
 import classNames from 'classnames';
