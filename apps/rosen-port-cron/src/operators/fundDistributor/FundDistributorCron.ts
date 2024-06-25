@@ -3,9 +3,9 @@ import { FundDistributor } from './FundDistributor';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
-import { FundDistributorStoreClient } from './storeClient';
-import { WalletClient } from '../../types/executor';
+import { ContainerTxStoreClient } from './storeClient';
 import { RosenUserInterface } from '@rosen/sdk';
+import { WalletClient } from '../utils/WalletClient';
 
 export class FundDistributorCronExecutor extends RosenPortCronExecutor {
   rosenUserInterface: RosenUserInterface;
@@ -36,14 +36,14 @@ export class FundDistributorCronExecutor extends RosenPortCronExecutor {
       `[FundDistributor] Retrieved ${containers.length} bridged containers to process`
     );
 
-    const fundDistributorStoreClient: FundDistributorStoreClient =
-      new FundDistributorStoreClient(this.dbClient);
+    const containerTxStoreClient: ContainerTxStoreClient =
+      new ContainerTxStoreClient(this.dbClient);
     const walletClient: WalletClient = new WalletClient(this.dbClient);
     // 2. For each container
     containers.forEach(async (container) => {
       const fundDistributor = new FundDistributor(
         container,
-        fundDistributorStoreClient,
+        containerTxStoreClient,
         this.rosenUserInterface,
         walletClient
       );

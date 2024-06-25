@@ -5,7 +5,7 @@ import { RosenPortCronExecutor } from '../../cron/RosenPortCronExecutor';
 import { RefundStoreClient } from './storeClient';
 import { RosenUserInterface } from '@rosen/sdk';
 import { RefundTxChecker } from './refundTxChecker';
-import { WalletClient } from '../../types/executor';
+import { WalletClient } from '../utils/WalletClient';
 
 // Run a runner where it Refunds
 // 1. Check for Tx that needs to be refunded
@@ -34,7 +34,7 @@ export class RefundOperatorCronExecutor extends RosenPortCronExecutor {
     // 1. Get refundTxs that have service fee paid
     const refunds = await this.getValidRefunds();
     const refundStoreClient = new RefundStoreClient(this.dbClient);
-    const refundTxChecker = new RefundTxChecker();
+    const refundTxChecker = new RefundTxChecker(refundStoreClient);
     const walletClient = new WalletClient(this.dbClient);
 
     // 2. For each refunds

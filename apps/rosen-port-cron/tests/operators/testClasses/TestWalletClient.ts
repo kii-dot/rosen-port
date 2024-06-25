@@ -1,11 +1,29 @@
 import { Wallet } from '@rosen-port/db';
-import { IWalletClient } from '../../../src/types/executor';
+import { IWalletClient } from '../../../src/operators/utils/WalletClient';
+import {
+  IMCPWallet,
+  IMultiChainPayment,
+} from '@rosen-port/multi-chain-payment';
+import { Networks } from '@rosen-port/chains';
 
 export class TestWalletClient implements IWalletClient {
   private walletStore: Map<string, Wallet>;
+  network: keyof typeof Networks;
 
   constructor() {
     this.walletStore = new Map(); // Initializes a map to store Wallet objects keyed by chain.
+  }
+
+  setNetwork(network: keyof typeof Networks): void {
+    this.network = network;
+  }
+
+  getMCPWallet(): IMCPWallet {
+    throw new Error('Method not implemented.');
+  }
+
+  getMultiChainPayment(): IMultiChainPayment {
+    throw new Error('Method not implemented.');
   }
 
   async getWallet(chain: string): Promise<Wallet> {

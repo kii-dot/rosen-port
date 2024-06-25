@@ -42,6 +42,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "@fleet-sdk/common": "^0.4.1",
     "@rosen-port/chains": "^0.1.0",
     "@rosen-port/db": "^0.1.0",
     "@rosen-port/errors": "^0.1.0"

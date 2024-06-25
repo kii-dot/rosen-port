@@ -1,16 +1,11 @@
-import { Refund, RefundStatus, RosenPortDBClient } from '@rosen-port/db';
+import { Refund, RefundStatus } from '@rosen-port/db';
 import { IRefundOperator } from './types';
-import { IWalletClient, PortExecutor } from '../../types/executor';
+import { PortExecutor } from '../../types/executor';
 import { DBUpdateFailureException } from '@rosen-port/errors';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { IRefundTxChecker } from './refundTxChecker';
-import {
-  FundsTo,
-  IMultiChainPayment,
-  MCPWallet,
-  MultiChainPayment,
-} from '@rosen-port/multi-chain-payment';
+import { FundsTo, IMultiChainPayment } from '@rosen-port/multi-chain-payment';
 import { Networks } from '@rosen-port/chains';
 import { IRosenUserInterface } from '@rosen/sdk';
 import { RosenChainToken } from '@rosen-bridge/tokens';
@@ -19,6 +14,9 @@ import {
   RefundInvalidException,
   RefundServiceFeeNotConfirmedException,
 } from '../../errors/refundErrors';
+import { IWalletClient } from '../utils/WalletClient';
+import { getNetworks } from '../utils/networks';
+import { getMnemonic } from '../../constants/mnemonicConstants';
 
 export class RefundOperator extends PortExecutor implements IRefundOperator {
   refund: Refund;
@@ -26,6 +24,7 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
   refundTxId: string = '';
   rosenUI: IRosenUserInterface;
   refundTxChecker: IRefundTxChecker;
+  sourceChainNetwork: keyof typeof Networks;
 
   constructor(
     refund: Refund,
@@ -40,6 +39,8 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
     this.refundClient = refundClient;
     this.refundTxChecker = refundTxChecker;
     this.walletClient = walletClient;
+    // In Refund, everything is done on the source chain side.
+    this.sourceChainNetwork = getNetworks(refund.container.sourceChain);
   }
 
   /**
@@ -124,7 +125,7 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
    */
   async refundTx(refund: Refund): Promise<string> {
     const container = refund.container;
-    const rosenPortWalletAddress = await this.getPortWallet(
+    const rosenPortWalletAddress = await this.getPortWalletInfo(
       container.sourceChain
     );
     const tokenId = container.tokenType.tokenId;
@@ -135,19 +136,18 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
         container.destChain
       );
 
-    // @ts-ignore
-    const network: keyof typeof Networks = Networks[refund.container.destChain];
     const fundsTo: FundsTo = {
-      token: rosenChainToken[container.destChain],
+      token: rosenChainToken[this.sourceChainNetwork],
       // Note: The tx.amount from Tx is the exact amount transferred
       // that has taken decimals into account.
       decimalAmount: refund.txToRefund.amount,
-      toAddress: refund.txToRefund.destAddress,
+      // We're sending it back to the source
+      toAddress: refund.txToRefund.sourceAddress,
     };
     // 2bii. create MCPWallet to send funds back
-    const multiChainPayment: IMultiChainPayment = new MultiChainPayment(
-      network
-    );
+    this.walletClient.setNetwork(this.sourceChainNetwork);
+    const multiChainPayment: IMultiChainPayment =
+      this.walletClient.getMultiChainPayment();
     const unsignedTx = await multiChainPayment.sendTo(
       rosenPortWalletAddress.walletAddress,
       fundsTo
@@ -160,9 +160,8 @@ export class RefundOperator extends PortExecutor implements IRefundOperator {
     );
 
     // create Wallet
-    // @ts-ignore
-    const walletMnemonic = MNEMONIC[container.destChain];
-    const mcpWallet = new MCPWallet(network);
+    const walletMnemonic = getMnemonic(this.sourceChainNetwork);
+    const mcpWallet = this.walletClient.getMCPWallet();
     const wallet = mcpWallet.create(walletMnemonic);
     const walletAddress = await wallet.address();
 

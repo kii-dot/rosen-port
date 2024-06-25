@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IRefundTxChecker } from '../../src/operators/refundOperator/refundTxChecker';
 import { IRefundStoreClient } from '../../src/operators/refundOperator/storeClient';
-import { IWalletClient } from '../../src/types/executor';
 import { TestWalletClientFactory } from './testClasses/TestWalletClient';
 import {
   TestRefundStoreClientFactory,
@@ -12,6 +11,7 @@ import { refunds } from './mock';
 import { testRosenUI } from '../testUtils/testRosenUI';
 import { RefundStatus } from '@rosen-port/db';
 import { RefundInvalidException } from '../../src/errors/refundErrors';
+import { IWalletClient } from '../../src/operators/utils/WalletClient';
 
 var refundClient: IRefundStoreClient = TestRefundStoreClientFactory.generate();
 var refundTxChecker: IRefundTxChecker = new TestRefundTxChecker(refundClient);

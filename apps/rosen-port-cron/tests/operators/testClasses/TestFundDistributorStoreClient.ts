@@ -1,7 +1,6 @@
 import { Container, ContainerStatus, Tx, TxStatus } from '@rosen-port/db';
 import { IContainerTxStoreClient } from '../../../src/operators/fundDistributor/storeClient';
 import { bridgedTxs, confirmedTxs } from '../mock';
-import { NotImplementedException } from '@rosen-port/errors';
 
 export class TestContainerTxStoreClient implements IContainerTxStoreClient {
   private txStore: Tx[];
