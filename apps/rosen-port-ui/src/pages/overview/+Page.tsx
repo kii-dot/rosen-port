@@ -39,19 +39,19 @@ function Page() {
           <div className="relative isolate overflow-hidden px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
             <nav className="flex space-x-4">
               <p
-                className={`px-4 py-2 ${activeTab === PageTabs.BridgeTab ? 'text-teal-400' : 'text-gray-400'}`}
+                className={`px-4 py-2 rounded-lg hover:outline hover:bg-teal-800 ${activeTab === PageTabs.BridgeTab ? 'text-teal-400' : 'text-gray-400'}`}
                 onClick={() => setActiveTab(PageTabs.BridgeTab)}
               >
                 Bridge
               </p>
               <button
-                className={`px-4 py-2 ${activeTab === PageTabs.TxHistoryTab ? 'text-teal-400' : 'text-gray-400'}`}
+                className={`px-4 py-2 rounded-lg hover:bg-teal-800 ${activeTab === PageTabs.TxHistoryTab ? 'text-teal-400' : 'text-gray-400'}`}
                 onClick={() => setActiveTab(PageTabs.TxHistoryTab)}
               >
                 Transaction History
               </button>
               <button
-                className={`px-4 py-2 ${activeTab === PageTabs.ActiveBatchesTab ? 'text-teal-400' : 'text-gray-400'}`}
+                className={`px-4 py-2 rounded-lg hover:outline-double hover:bg-teal-800 ${activeTab === PageTabs.ActiveBatchesTab ? 'text-teal-400' : 'text-gray-400'}`}
                 onClick={() => setActiveTab(PageTabs.ActiveBatchesTab)}
               >
                 Active Batches
