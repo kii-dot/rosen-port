@@ -15,8 +15,8 @@ const dummyTransactionData = {
   },
   1: {
     Token: "ERG",
-    sourceNetwork: Chains[0],
-    destNetwork: Chains[1],
+    sourceNetwork: Chains[1],
+    destNetwork: Chains[0],
     DateTime: "2 Jul 2024 22:35",
     Status: "Completed",
     Actions: undefined
