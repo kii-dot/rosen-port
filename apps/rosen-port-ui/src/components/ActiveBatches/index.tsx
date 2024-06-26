@@ -21,7 +21,7 @@ const dummyActiveBranches = {
     token: Tokens[1],
     sourceNetwork: Chains[1],
     destNetwork: Chains[0],
-    amountFunded: 1800.0,
+    amountFunded: 2000.0,
     goal: 2000,
     batchStartTime: '21:47 | 4 Sep 2024',
   },
@@ -78,7 +78,7 @@ function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
                 </div>
                 <div className="col-span-1 text-teal-300 text-right px-2">{percentageFunded}%</div>
                 <div className="px-2 col-span-1 ">
-                  <div className="absolute -mt-8 ml-0.5 h-16 bg-gray-700 w-0.5" />
+                  <div className="absolute -mt-8 ml-0.5 h-16 bg-teal-700/40 w-0.5" />
                   <div className="ml-2 text-gray-400 text-left text-xs font-thin">
                     <div>Batch transfer</div>
                     <div>threshold ($2000)</div>

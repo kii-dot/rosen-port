@@ -1,5 +1,6 @@
 export { ProgressBar };
 
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
 const ProgressBar = ({ amount, goal }: { amount: number; goal: number }) => {
@@ -8,7 +9,10 @@ const ProgressBar = ({ amount, goal }: { amount: number; goal: number }) => {
   const ticks = Array.from({ length: numTicks }, (_, index) => (
     <div
       key={index}
-      className={`w-0.5 h-full ${percentage >= (index + 1) * (100 / numTicks) ? 'bg-teal-400' : 'bg-gray-300/10'}`}
+      className={classNames(
+        'w-0.5 h-full',
+        percentage >= (index + 1) * (130 / numTicks) ? 'bg-teal-400' : 'bg-gray-300/10',
+      )}
     ></div>
   ));
 

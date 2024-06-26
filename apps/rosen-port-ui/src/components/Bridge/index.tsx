@@ -24,7 +24,7 @@ function Bridge() {
           tokens={Tokens}
           selectedChain={Chains[0]}
           selectedToken={Tokens[2]}
-          tokenAmount={null}
+          tokenAmount={undefined}
         ></BridgeCard>
         <div className="flex justify-center py-5">
           <div className="bg-teal-800/20 rounded-full w-9 h-9 flex items-center justify-center">
@@ -40,7 +40,7 @@ function Bridge() {
           tokens={Tokens}
           selectedChain={Chains[1]}
           selectedToken={Tokens[2]}
-          tokenAmount={null}
+          tokenAmount={undefined}
         ></BridgeCard>
         <div className="text-gray-400 text-xs font-thin flex my-5">Fees: ~${fees}(1.00%)</div>
         <button className="bg-teal-500 w-full rounded-lg py-2">Initiate Bridge</button>

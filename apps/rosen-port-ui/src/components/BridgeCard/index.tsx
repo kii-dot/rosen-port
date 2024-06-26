@@ -6,7 +6,7 @@ import { IChain, IToken } from '#/types/chains';
 interface BridgeCardProps {
   name: string;
   estimateAmount: number;
-  tokenAmount: number | null;
+  tokenAmount: number | undefined;
   balanceAmount: number;
   setChainChanged?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setTokenChanged?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -162,7 +162,6 @@ export default function BridgeCard({
               type="number"
               className="block w-full py-1.5 border-none border-transparent text-xl focus:outline-none focus:ring-0 bg-transparent text-gray-100 shadow-sm placeholder:text-gray-400 sm:leading-6"
               placeholder="Enter Amount..."
-              defaultValue={''}
               value={tokenAmount}
             />
             <div className="flex-shrink-0">

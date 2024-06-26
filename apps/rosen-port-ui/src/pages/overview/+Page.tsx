@@ -35,8 +35,8 @@ function Page() {
     <>
       <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-950 to-black opacity-90">
         <Header />
-        <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-16 lg:px-8">
-          <div className="relative isolate overflow-hidden px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
+        <div className="mx-auto max-w-7xl lg:py-24 sm:px-6 sm:py-16 lg:px-8">
+          <div className="relative isolate overflow-hidden px-6 lg:py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
             <nav className="flex space-x-4">
               <p
                 className={`px-4 py-2 rounded-lg hover:outline hover:bg-teal-800 ${activeTab === PageTabs.BridgeTab ? 'text-teal-400' : 'text-gray-400'}`}
