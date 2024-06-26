@@ -3,6 +3,7 @@ import { ProgressBar } from '../ProgressBar';
 import { Chains } from '#/constants/chains';
 import { ArrowLongRightIcon } from '@heroicons/react/20/solid';
 import { Tokens } from '#/constants/tokens';
+import { RoundedLabel } from '../Label/RoundedLabel';
 export { ActiveBatches };
 
 const dummyActiveBranches = {
@@ -13,7 +14,7 @@ const dummyActiveBranches = {
     destNetwork: Chains[1],
     amountFunded: 900.0,
     goal: 2000,
-    batchStartTime: "22:37 | 4 Sep 2024"
+    batchStartTime: '22:37 | 4 Sep 2024',
   },
   1: {
     name: 'rsSigUSD Bridge',
@@ -22,7 +23,7 @@ const dummyActiveBranches = {
     destNetwork: Chains[0],
     amountFunded: 1800.0,
     goal: 2000,
-    batchStartTime: "21:47 | 4 Sep 2024"
+    batchStartTime: '21:47 | 4 Sep 2024',
   },
   2: {
     name: 'rsSigUSD Bridge',
@@ -31,27 +32,8 @@ const dummyActiveBranches = {
     destNetwork: Chains[1],
     amountFunded: 1900.0,
     goal: 2000,
-    batchStartTime: "20:58 | 4 Sep 2024"
+    batchStartTime: '20:58 | 4 Sep 2024',
   },
-};
-
-interface RoundedLabelProps {
-  name: string;
-  icon: string;
-  id: string;
-}
-const RoundedLabel = ({ name, icon, id }: RoundedLabelProps) => {
-  return (
-    <div className="flex flex-row">
-      <div className="flex flex-row items-center bg-indigo-200/20 py-1 rounded-full px-2">
-        <img src={icon} alt="" className="h-4 w-4 flex-shrink-0 rounded-full" />
-
-        <span className={classNames('hidden truncate text-xs sm:ml-2 sm:block')}>
-          {id === null ? 'Select Network' : name}
-        </span>
-      </div>
-    </div>
-  );
 };
 
 interface ActiveBatchesProps {
@@ -65,8 +47,9 @@ function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
         const data = dummyActiveBranches[keyName];
         const percentageFunded = (data.amountFunded / data.goal) * 100;
         return (
-          <div className="flex py-4 text-gray-200 outline-teal-800 hover:outline">
-            <div className="w-1/4 flex flex-col align-center">
+          <div className="grid grid-cols-1 lg:grid-cols-4 pb-4 text-gray-200 outline-teal-800 space-y-4 border-t border-slate-800/40">
+            {/** Bridge Name */}
+            <div className="col-span-1 flex flex-col align-center justify-center">
               <div className="text-left py-3 flex flex-row items-center">
                 <img src={data.token.icon} alt="" className="h-6 w-6 flex-shrink-0 rounded-full mr-2" />
                 {data.token.name} Bridge
@@ -83,7 +66,9 @@ function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
               </div>
               {/** Network path end*/}
             </div>
-            <div className="w-2/4 content-center">
+            {/** Bridge Name end */}
+            {/** Progress bar */}
+            <div className="col-span-1 lg:col-span-2 content-center">
               <div className="text-left text-xs font-thin text-gray-400 py-2">Batch starting time: </div>
               <ProgressBar amount={data.amountFunded} goal={data.goal} />
               <div className="grid grid-cols-4 items-center">
@@ -101,15 +86,18 @@ function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
                 </div>
               </div>
             </div>
-            <div className="w-1/4 content-center">
+            {/** Progress bar end*/}
+            {/** button */}
+            <div className="col-span-1 flex flex-row justify-end lg:items-center">
               <button
                 onClick={onBridgeViaThisBatchClicked}
-                className="py-3 bg-gray-800 text-white text-xs px-5 rounded-lg hover:bg-teal-800 outline shadow-2xl"
+                className="py-3 bg-gray-800 text-white text-xs px-5 rounded-lg drop-shadow-sm hover:drop-shadow-md hover:bg-gray-700 hover:text-slate-200 active:bg-gray-900 active:text-slate-300 active:shadow-inner shadow-2xl"
               >
                 {' '}
                 Bridge via this batch
               </button>
             </div>
+            {/** button end */}
           </div>
         );
       })}
