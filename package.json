@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "@changesets/cli": "^2.27.1",
+    "dateformat": "^5.0.3",
+    "fast-copy": "^3.0.2",
+    "pino-abstract-transport": "^1.2.0",
     "vite": "^5.0.10"
   },
   "devDependencies": {
