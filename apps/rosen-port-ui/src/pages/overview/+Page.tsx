@@ -14,7 +14,7 @@ enum PageTabs {
 }
 
 function Page() {
-  const [activeTab, setActiveTab] = useState(PageTabs.ActiveBatchesTab);
+  const [activeTab, setActiveTab] = useState(PageTabs.TxHistoryTab);
 
   let ActiveComponent: React.FC;
   switch (activeTab) {
