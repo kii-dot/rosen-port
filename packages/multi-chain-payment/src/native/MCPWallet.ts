@@ -7,16 +7,21 @@ import {
   Wallet as ErgoBackendWallet,
   ErgoNodeAPI,
 } from '@rosen-port/ergo-explorer-node';
+import { ErgoBoxProxy } from '@rosen-ui/wallet-api';
+import { CardanoUtxo } from '@rosen/sdk';
 
-export class MCPWallet {
-  static create({
-    network,
-    mnemonic,
-  }: {
-    network: keyof typeof Networks;
-    mnemonic: string;
-  }) {
-    switch (network) {
+export interface IMCPWallet {
+  create(mnemonic: string): IWallet;
+}
+
+export class MCPWallet implements IMCPWallet {
+  network: keyof typeof Networks;
+  constructor(network: keyof typeof Networks) {
+    this.network = network;
+  }
+
+  create(mnemonic: string): IWallet {
+    switch (this.network) {
       case Networks.ergo:
         return new ErgoWallet(mnemonic);
       case Networks.cardano:
@@ -24,15 +29,19 @@ export class MCPWallet {
       case Networks.bitcoin:
         return new BitcoinWallet(mnemonic);
       default:
-        throw new ChainNotImplementedError(network);
+        throw new ChainNotImplementedError(this.network);
     }
   }
 }
 
-interface IWallet {
+export interface IWallet {
   signAndSubmit: (
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
   ) => Promise<string>;
+
+  address: () => Promise<string>;
+
+  getUtxos: () => Promise<ErgoBoxProxy[] | CardanoUtxo[]>;
 }
 
 class ErgoWallet implements IWallet {
@@ -44,6 +53,14 @@ class ErgoWallet implements IWallet {
     this.nodeApi = new ErgoNodeAPI();
     // @todo kii make sure this is fixed, it should be in constructor?
     this.walletIndex = 0;
+  }
+
+  async getUtxos(): Promise<ErgoBoxProxy[] | CardanoUtxo[]> {
+    throw new NotImplementedException();
+  }
+
+  async address(): Promise<string> {
+    return this.wallet.getAddress(0);
   }
 
   async signAndSubmit(
@@ -112,10 +129,20 @@ class BitcoinWallet implements IWallet {
 
     throw new NotImplementedException();
   }
+  async address(): Promise<string> {
+    throw new NotImplementedException();
+  }
+  async getUtxos(): Promise<ErgoBoxProxy[] | CardanoUtxo[]> {
+    throw new NotImplementedException();
+  }
 }
 
 class CardanoWallet implements IWallet {
   constructor(mnemonic: string) {}
+  async getUtxos(): Promise<ErgoBoxProxy[] | CardanoUtxo[]> {
+    throw new NotImplementedException();
+  }
+
   async signAndSubmit(
     unsignedTx: string | UnsignedPsbtData | EIP12UnsignedTransaction
   ): Promise<string> {
@@ -127,6 +154,10 @@ class CardanoWallet implements IWallet {
 
     // return result;
 
+    throw new NotImplementedException();
+  }
+
+  async address(): Promise<string> {
     throw new NotImplementedException();
   }
 }

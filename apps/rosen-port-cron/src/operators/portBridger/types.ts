@@ -22,4 +22,14 @@ export interface IPortBridger {
    * @returns boolean determining whether the bridging was successful
    */
   bridgeContainer: (container: Container) => Promise<string>;
+
+  /**
+   * Update
+   * - Bridge Status
+   * - Bridged Time
+   * - Bridge Tx Id
+   * @param containerId Id of container
+   * @returns whether the db was updated
+   */
+  updateContainerStatus: (containerId: string) => Promise<boolean>;
 }

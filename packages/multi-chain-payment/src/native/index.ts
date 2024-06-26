@@ -1,4 +1,2 @@
-import { MCPWallet } from "./MCPWallet";
-import { MultiChainPayment } from "./MultiChainPayment";
-
-export {MultiChainPayment, MCPWallet}
+export * from './MCPWallet';
+export * from './MultiChainPayment';

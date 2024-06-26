@@ -1,76 +1,109 @@
-import {
-  Container,
-  ContainerStatus,
-  RosenPortDBClient,
-  Tx,
-  TxStatus,
-} from '@rosen-port/db';
+import { Container, ContainerStatus, Tx, TxStatus } from '@rosen-port/db';
 import { IFundDistributor } from './types';
-import {
-  FundsTo,
-  MCPWallet,
-  MultiChainPayment,
-} from '@rosen-port/multi-chain-payment';
-import { TokenMap } from '@rosen-bridge/tokens';
+import { FundsTo, IMultiChainPayment } from '@rosen-port/multi-chain-payment';
+import { RosenChainToken } from '@rosen-bridge/tokens';
 import { Networks } from '@rosen-port/chains';
-import { MNEMONIC } from '../../constants/mnemonicConstants';
+import { MNEMONIC, getMnemonic } from '../../constants/mnemonicConstants';
 import { Logger } from '../../logging';
 import { CronCategory } from '../../constants/cronConstants';
 import { PortExecutor } from '../../types/executor';
-import { NotImplementedException } from '@rosen-port/errors';
-import { Wallet } from '@rosen-port/db';
-import { RosenChains } from '@rosen/sdk';
+import { DBUpdateFailureException } from '@rosen-port/errors';
+import { IRosenUserInterface } from '@rosen/sdk';
+import { IContainerTxStoreClient } from './storeClient';
+import { FundsNotBridgedException } from '../../errors/bridgerErrors';
+import { IWalletClient } from '../utils/WalletClient';
+import { getNetworks } from '../utils/networks';
 
 export class FundDistributor extends PortExecutor implements IFundDistributor {
-  tokenMap: TokenMap;
   container: Container;
-  updatedTxId: string;
-  db: RosenPortDBClient;
+  distributionTxId: string;
+  containerTxStoreClient: IContainerTxStoreClient;
+  rosenUserInterface: IRosenUserInterface;
   txs: Tx[];
+  destChainNetwork: keyof typeof Networks;
 
-  constructor(tokenMap: TokenMap, container: Container, db: RosenPortDBClient) {
+  constructor(
+    container: Container,
+    containerTxStoreClient: IContainerTxStoreClient,
+    rosenUserInterface: IRosenUserInterface,
+    walletClient: IWalletClient
+  ) {
     super();
-    this.tokenMap = tokenMap;
     this.container = container;
-    this.db = db;
+    this.walletClient = walletClient;
+    this.containerTxStoreClient = containerTxStoreClient;
+    this.rosenUserInterface = rosenUserInterface;
+    // In FundDistributor, we've already landed on destchain side and
+    // do not need to bother about sourceChain side
+    this.destChainNetwork = getNetworks(container.destChain);
   }
 
   async onExecute(): Promise<void> {
-    Logger.info(
-      '0',
-      CronCategory.FundDistributor,
-      '[FundDistributorCron] Distribute funds start'
-    );
-
-    this.updatedTxId = await this.distributeFunds(this.container, this.txs);
-
-    if (this.updatedTxId === '') {
-      Logger.error(
-        '0',
-        CronCategory.FundDistributor,
-        `[FundDistributorCron] Failure to distribute funds: ${this.updatedTxId}`
-      );
-    } else {
+    try {
       Logger.info(
         '0',
         CronCategory.FundDistributor,
-        `[FundDistributorCron] Funds Distributed with txId - ${this.updatedTxId}`
+        '[FundDistributorCron] Distribute funds start'
       );
+
+      this.distributionTxId = await this.distributeFunds(
+        this.container,
+        this.txs
+      );
+
+      if (this.distributionTxId === '') {
+        Logger.error(
+          '0',
+          CronCategory.FundDistributor,
+          `[FundDistributorCron] Failure to distribute funds: ${this.distributionTxId}`
+        );
+      } else {
+        Logger.info(
+          '0',
+          CronCategory.FundDistributor,
+          `[FundDistributorCron] Funds Distributed with txId - ${this.distributionTxId}`
+        );
+      }
+    } catch (error) {
+      Logger.error(
+        '0',
+        CronCategory.FundDistributor,
+        `[FundDistributorCron] Failure to distribute funds: ${this.distributionTxId}`
+      );
+      throw error;
     }
   }
 
   async onBeforeExecute(): Promise<void> {
-    Logger.info(
-      '0',
-      CronCategory.FundDistributor,
-      RosenChains.getBaseNetworkFee(Networks.ergo).toString()
-    );
     this.txs = await this.getContainerTxs(this.container);
-    await this.ensureBridged(this.container);
+    this.ensureBridged(this.container);
   }
 
   async onAfterExecute(): Promise<void> {
-    await this.updateDistributedTx(this.updatedTxId);
+    const updateSuccessful = await this.updateDistributedTx(
+      this.distributionTxId
+    );
+
+    if (updateSuccessful) {
+      Logger.info(
+        '0',
+        CronCategory.FundDistributor,
+        `[FundDistributorCron] Funds Distributed updated txId - ${this.distributionTxId}`
+      );
+    } else {
+      Logger.error(
+        '0',
+        CronCategory.FundDistributor,
+        `[FundDistributorCron] FAILED: Funds Distributed with distributed txId - ${this.distributionTxId}`
+      );
+
+      // with this error, at least we can catch it and retry
+      // We surround the id with [] in case we need to parse the string
+      // and retry
+      throw new DBUpdateFailureException(
+        `Funds Distributed failed to update containerID [${this.container.id}] with distributionId [${this.distributionTxId}]`
+      );
+    }
   }
 
   /**
@@ -81,27 +114,19 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
    * @returns boolean, true represent bridged, false represents
    *          unbridged
    */
-  async ensureBridged(container: Container): Promise<void> {
+  ensureBridged(container: Container): void {
     // 1. Check if container is bridged
+    // When a container is bridged, the funds have been received.
+    // This check is done in StatusChecker.
     const isBridged = container.status === ContainerStatus.bridged;
 
     if (!isBridged) {
-      throw new Error('Funds not bridged');
-    }
-
-    // 2. Check if the wallet has received the funds.
-    const isFundsReceived = await this.hasPortWalletReceivedFunds(
-      this.container,
-      this.txs
-    );
-
-    if (!isFundsReceived) {
-      throw new Error('Funds not Received');
+      throw new FundsNotBridgedException();
     }
   }
 
   async getContainerTxs(container: Container): Promise<Tx[]> {
-    const txs = await this.db.tx.getContainerTxs(this.container.id);
+    const txs = await this.containerTxStoreClient.getContainerTxs(container.id);
     return txs;
   }
 
@@ -115,39 +140,44 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
    */
   async distributeFunds(container: Container, txs: Tx[]): Promise<string> {
     const to: Array<FundsTo> = [];
-    const token = container.tokenType.tokenId;
-    const rosenChainTokens = this.tokenMap.search(container.destChain, {
-      tokenId: token,
-    });
+    const tokenId = container.tokenType.tokenId;
+    const token: RosenChainToken =
+      this.rosenUserInterface.getTokenDetailsOnTargetChain(
+        container.sourceChain,
+        tokenId,
+        container.destChain
+      );
 
-    const rosenPortWalletAddress = await this.getPortWallet(
+    const rosenPortWalletAddress = await this.getPortWalletInfo(
       this.container.destChain
     );
 
     txs.forEach(async (tx) => {
       if (tx.txStatus === TxStatus.bridged) {
         const fundsTo = {
-          token: rosenChainTokens[0][container.destChain],
-          // @todo kii This decimalAmount is wrong
-          decimalAmount: tx.amount / 1000000000,
+          token: token[this.destChainNetwork],
+          // Note: The tx.amount from Tx is the exact amount transferred
+          // that has taken decimals into account.
+          decimalAmount: tx.amount,
           toAddress: tx.destAddress,
         };
         to.push(fundsTo);
       }
     });
 
-    // @ts-ignore
-    const network = Networks[container.destChain];
-    const unsignedTx = await MultiChainPayment.disperse({
-      network,
-      sourceAddress: rosenPortWalletAddress.walletAddress,
-      to,
-    });
+    const network: keyof typeof Networks = getNetworks(this.destChainNetwork);
+    this.walletClient.setNetwork(network);
+    const multiChainPayment: IMultiChainPayment =
+      this.walletClient.getMultiChainPayment();
+    const unsignedTx = await multiChainPayment.disperse(
+      rosenPortWalletAddress.walletAddress,
+      to
+    );
 
     // create Wallet
-    // @ts-ignore
-    const walletMnemonic = MNEMONIC[container.destChain];
-    const wallet = MCPWallet.create({ network, mnemonic: walletMnemonic });
+    const walletMnemonic = getMnemonic(this.destChainNetwork);
+    const mcpWallet = this.walletClient.getMCPWallet();
+    const wallet = mcpWallet.create(walletMnemonic);
 
     // Sign and send txs
     const tx = await wallet.signAndSubmit(unsignedTx);
@@ -163,7 +193,7 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
    *          represents failure to update db.
    */
   async updateDistributedTx(txId: string): Promise<boolean> {
-    const dbResult = await this.db.tx.updateDistributedTxId(
+    const dbResult = await this.containerTxStoreClient.updateDistributedTxId(
       txId,
       this.container.id
     );
@@ -181,29 +211,5 @@ export class FundDistributor extends PortExecutor implements IFundDistributor {
     } else {
       return false;
     }
-  }
-
-  /**
-   * Check to see if Port Wallet Received Funds
-   *
-   * Check if there is a tx from explorer to wallet from Rosen wallet
-   * container.bridgedTxId is updated by the StatusChecker CronJob
-   * @todo sangy, help figure out what is the best way for us to check this.
-   */
-  async hasPortWalletReceivedFunds(
-    container: Container,
-    txs: Tx[]
-  ): Promise<boolean> {
-    const totalTokenAmount: number = txs.reduce(
-      (accumulator, currentValue) => accumulator + currentValue.amount,
-      0
-    );
-
-    // @ts-ignore
-    const network = Networks[container.destChain];
-
-    const bridgedTxId: string = container.bridgedTxId;
-
-    throw new NotImplementedException();
   }
 }

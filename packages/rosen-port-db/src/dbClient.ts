@@ -410,12 +410,13 @@ class TxDB extends DB {
 
   updateDistributedTxId = async (
     distributedTxId: string,
-    containerId: string
+    containerId: string,
+    status: TxStatus
   ): Promise<Tx[]> => {
     const { data, error } = await this.supabaseClient
       .from(DbConstants.transactions.name)
       .update({
-        [DbConstants.transactions.columns.tx_status.name]: TxStatus.sent,
+        [DbConstants.transactions.columns.tx_status.name]: status,
         [DbConstants.transactions.columns.distributed_tx_id.name]:
           distributedTxId,
       })
@@ -504,6 +505,21 @@ class RefundsDB extends DB {
       });
 
       return refunds;
+    }
+
+    throw error;
+  };
+
+  getRefundById = async (txId: string): Promise<Refund> => {
+    const { data, error } = await this.supabaseClient
+      .from(DbConstants.refunds.name)
+      .select(this.getRefundQuery)
+      .eq(DbConstants.refunds.columns.tx_to_refund.name, txId);
+
+    if (data !== null && error == null) {
+      const refund = to.refund(data[0]);
+
+      return refund;
     }
 
     throw error;
