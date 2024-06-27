@@ -55,8 +55,8 @@
     "typescript": "^5.3.3",
     "underscore": "^1.13.6",
     "unstated-next": "^1.1.0",
-    "vike": "^0.4.152",
-    "vite": "^5.0.10",
+    "vike": "^0.4.177",
+    "vite": "^5.2.7",
     "zod": "^3.22.4"
   },
   "devDependencies": {

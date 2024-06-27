@@ -13,6 +13,12 @@ export default {
       jsx: 'react',
     }),
   ],
+  server: {
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+    },
+  },
   resolve: {
     alias: {
       '#': resolve('./src'),

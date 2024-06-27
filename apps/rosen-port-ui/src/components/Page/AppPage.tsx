@@ -14,15 +14,15 @@ function AppPage({ children }: AppPageProps) {
         <Header />
         <div className="mx-auto max-w-7xl lg:py-24 sm:px-6 sm:py-16 lg:px-8">
           <div className="relative isolate overflow-hidden px-6 lg:py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
-            <nav id="navbar" className="flex space-x-4">
-              <Link href="bridge" className="text-sm leading-6 text-white is-active:bg-teal-400">
+            <nav id="navbar" className="flex space-x-8 tracking-wider text-lg leading-6">
+              <Link href="bridge" className="text-white is-active:bg-teal-400">
                 {/* {`px-4 py-2 rounded-lg hover:outline hover:bg-teal-800 ${activeTab === PageTabs.BridgeTab ? 'text-teal-400' : 'text-gray-400'}`} */}
                 Bridge
               </Link>
-              <Link href="txs" className="text-sm leading-6 text-white">
+              <Link href="txs" className="text-white">
                 Transaction History
               </Link>
-              <Link href="batches" className="text-sm leading-6 text-white">
+              <Link href="batches" className="text-white">
                 Active Batches
               </Link>
             </nav>

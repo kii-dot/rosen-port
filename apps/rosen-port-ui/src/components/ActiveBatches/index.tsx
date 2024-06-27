@@ -47,7 +47,10 @@ function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
         const data = dummyActiveBranches[keyName];
         const percentageFunded = (data.amountFunded / data.goal) * 100;
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-4 pb-4 text-gray-200 outline-teal-800 space-y-4 border-t border-slate-800/40">
+          <div
+            id={keyName}
+            className="grid grid-cols-1 lg:grid-cols-4 pb-4 text-gray-200 outline-teal-800 space-y-4 border-t border-slate-800/40"
+          >
             {/** Bridge Name */}
             <div className="col-span-1 flex flex-col align-center justify-center">
               <div className="text-left py-3 flex flex-row items-center">
