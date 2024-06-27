@@ -1,9 +1,33 @@
-import { productName } from './content';
 import logoIcon from '#/assets/logoNName.svg';
 import { WalletButton } from '../WalletButton';
 export { Header };
+import {
+  Dialog,
+  DialogPanel,
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Popover,
+  PopoverButton,
+  PopoverGroup,
+  PopoverPanel,
+} from '@headlessui/react';
+import {
+  ArrowPathIcon,
+  Bars3Icon,
+  ChartPieIcon,
+  CursorArrowRaysIcon,
+  FingerPrintIcon,
+  SquaresPlusIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid';
 
-function Header() {
+interface HeaderProps {
+  mobileMenuOpen: boolean;
+}
+
+function Header({ mobileMenuOpen }: HeaderProps) {
   return (
     <header className="grid grid-cols-4 items-center mx-4 py-4">
       <div className="col-span-2 items-center text-lg flex">
