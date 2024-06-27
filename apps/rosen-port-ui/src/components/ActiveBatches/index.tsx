@@ -42,7 +42,7 @@ interface ActiveBatchesProps {
 
 function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
   return (
-    <div className="p-4 items-center">
+    <div className="items-center">
       {Object.keys(dummyActiveBranches).map((keyName) => {
         const data = dummyActiveBranches[keyName];
         const percentageFunded = (data.amountFunded / data.goal) * 100;

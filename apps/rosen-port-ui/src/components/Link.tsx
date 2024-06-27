@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { usePageContext } from '../context/usePageContext';
 import PropTypes from 'prop-types';
 
@@ -32,7 +33,11 @@ Link.propTypes = {
 
 export function RosenPortLink(props) {
   return (
-    <Link href={props.href} className={props.className} isActiveClassName={'text-teal-500'}>
+    <Link
+      href={props.href}
+      className={classNames(props.className, 'hover:text-gray-400')}
+      isActiveClassName={'text-teal-500 hover:text-teal-500'}
+    >
       {props.children}
     </Link>
   );

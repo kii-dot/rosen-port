@@ -2,7 +2,9 @@ import { Chains } from '#/constants/chains';
 import { Tokens } from '#/constants/tokens';
 import { truncate } from '#/tools/generic/addressTruncate';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import classNames from 'classnames';
 import { useState } from 'react';
+import { grayButtonsBg, whiteTextsButtons } from '../genericClassNames';
 
 export function WalletButton() {
   const [walletAddress, setWalletAddress] = useState('3WwsbBXjT2UBKrjEUqW1Ca4XLhgRt5A7mGKCEmPPBGFNu2F1jV9z');
@@ -21,7 +23,13 @@ export function WalletButton() {
     return (
       <div className="flex flex-row items-center space-x-2">
         {/** Value & Network */}
-        <button className="flex flex-row space-x-1 bg-gray-400/10 h-9 rounded-lg items-center px-1 hover:bg-gray-300/10 active:bg-gray-500/10">
+        <button
+          className={classNames(
+            'flex flex-row space-x-1 h-9 rounded-lg items-center px-1 ',
+            whiteTextsButtons,
+            grayButtonsBg,
+          )}
+        >
           <div className="bg-gray-800 h-6 rounded-lg flex items-center mr-1">
             <div className="text-white font-thin text-sm px-2">
               <div>
