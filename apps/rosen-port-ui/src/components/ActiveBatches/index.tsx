@@ -48,7 +48,7 @@ function ActiveBatches({ onBridgeViaThisBatchClicked }: ActiveBatchesProps) {
         const percentageFunded = (data.amountFunded / data.goal) * 100;
         return (
           <div
-            id={keyName}
+            key={keyName}
             className="grid grid-cols-1 lg:grid-cols-4 pb-4 text-gray-200 outline-teal-800 space-y-4 border-t border-slate-800/40"
           >
             {/** Bridge Name */}

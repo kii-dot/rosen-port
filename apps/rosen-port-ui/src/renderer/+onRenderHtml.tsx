@@ -25,8 +25,8 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
 
   // See https://vike.dev/head
   const { documentProps } = pageContext.exports;
-  const title = (documentProps && documentProps.title) || 'Totoma';
-  const desc = (documentProps && documentProps.description) || 'Simple Profile for business';
+  const title = (documentProps && documentProps.title) || 'Rosen Port';
+  const desc = (documentProps && documentProps.description) || 'Bridging for grassroots';
 
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="en">
