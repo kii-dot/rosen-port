@@ -5,9 +5,11 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import classNames from 'classnames';
 import { useState } from 'react';
 import { grayButtonsBg, whiteTextsButtons } from '../genericClassNames';
+import { NautilusIcon } from '#/components/Icons';
+import { LogOut } from '../Icons';
 
 export function WalletButton() {
-  const [walletAddress, setWalletAddress] = useState('');
+  const [walletAddress, setWalletAddress] = useState('1203nfsa01nas01');
   const [network, setNetwork] = useState(Chains[0]);
   const [token, setToken] = useState(Tokens[0]);
   const [tokenAmount, setTokenAmount] = useState(3189.54);
@@ -45,10 +47,19 @@ export function WalletButton() {
         </button>
         {/** Value & Network End */}
         {/** Wallet Address */}
-        <div className="hidden md:flex md:flex-row space-x-1 bg-gray-400/10 h-9 rounded-lg items-center px-1">
-          <div className="text-white font-thin text-sm px-2">{truncate(walletAddress, 8, '...')}</div>
+        <button
+          className={classNames(
+            'hidden md:flex md:flex-row space-x-1 bg-gray-400/10 h-9 rounded-lg items-center px-2',
+            grayButtonsBg,
+          )}
+        >
+          <NautilusIcon className="h-6 w-6 border rounded-full" />
+          <div className={classNames('text-white font-thin text-sm px-1', whiteTextsButtons)}>
+            {truncate(walletAddress, 8, '...')}
+          </div>
           {/* <ChevronDownIcon className="text-white h-5 w-5" /> */}
-        </div>
+          {/* <LogOut className={classNames('h-6 w-6', whiteTextsButtons)} /> */}
+        </button>
         {/** Wallet Address End */}
       </div>
     );

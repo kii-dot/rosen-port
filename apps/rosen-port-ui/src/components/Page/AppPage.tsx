@@ -12,7 +12,7 @@ function AppPage({ children }: AppPageProps) {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-black via-slate-950 to-dark-sea opacity-90 pb-10">
-        <img src={light} className="-z-10 absolute opacity-20 scale-x-[-1]" />
+        <img src={light} className="-z-10 h-full absolute opacity-20 scale-x-[-1]" />
         <Header />
         <div className="mx-auto max-w-7xl lg:py-24 sm:px-6 lg:px-8">
           <div className="relative isolate overflow-hidden px-6 lg:py-24 text-center sm:rounded-3xl sm:px-16">
