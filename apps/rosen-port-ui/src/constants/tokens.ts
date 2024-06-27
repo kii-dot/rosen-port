@@ -10,11 +10,6 @@ export const Tokens: Array<IToken> = [
     icon: ergoTokenIcon,
   },
   {
-    id: 'rsbtc',
-    name: 'rsBTC',
-    icon: btcTokenIcon,
-  },
-  {
     id: 'sigusd',
     name: 'SigUSD',
     icon: sigUSDTokenIcon,

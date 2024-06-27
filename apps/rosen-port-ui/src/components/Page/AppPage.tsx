@@ -10,7 +10,7 @@ interface AppPageProps {
 function AppPage({ children }: AppPageProps) {
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-950 to-black opacity-90">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-950 to-black opacity-90 pb-10">
         <Header />
         <div className="mx-auto max-w-7xl lg:py-24 sm:px-6 lg:px-8">
           <div className="relative isolate overflow-hidden px-6 lg:py-24 text-center sm:rounded-3xl sm:px-16">

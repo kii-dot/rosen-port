@@ -11,7 +11,11 @@ const BridgeConstants = {
 };
 const fees = 1.5;
 
-function Bridge() {
+interface BridgeProps {
+  onTokenButtonClicked?: React.MouseEventHandler;
+}
+
+function Bridge({ onTokenButtonClicked }: BridgeProps) {
   return (
     <div className="lg:grid lg:grid-cols-2">
       <div className="flex-row lg:col-span-1 lg:pr-10">
@@ -23,7 +27,8 @@ function Bridge() {
           chains={Chains}
           tokens={Tokens}
           selectedChain={Chains[0]}
-          selectedToken={Tokens[2]}
+          selectedToken={Tokens[1]}
+          onTokenButtonClicked={onTokenButtonClicked}
           tokenAmount={undefined}
         ></BridgeCard>
         <div className="flex justify-center py-5">
@@ -39,7 +44,8 @@ function Bridge() {
           chains={Chains}
           tokens={Tokens}
           selectedChain={Chains[1]}
-          selectedToken={Tokens[2]}
+          selectedToken={Tokens[1]}
+          onTokenButtonClicked={onTokenButtonClicked}
           tokenAmount={undefined}
         ></BridgeCard>
         <div className="text-gray-400 text-xs font-thin flex my-5">Fees: ~${fees}(1.00%)</div>
