@@ -43,7 +43,9 @@ function Bridge() {
           tokenAmount={undefined}
         ></BridgeCard>
         <div className="text-gray-400 text-xs font-thin flex my-5">Fees: ~${fees}(1.00%)</div>
-        <button className="bg-teal-500 w-full rounded-lg py-2">Initiate Bridge</button>
+        <button className="bg-teal-500 w-full rounded-lg py-2 hover:bg-teal-400 hover:text-gray-900 active:bg-teal-600 active:text-gray-800">
+          Initiate Bridge
+        </button>
       </div>
       <div className="mt-12 lg:mt-3 lg:col-span-1 lg:pr-10 lg:pl-24 lg:pt-10">
         <BridgeInfo capacityFilledAmount={100} addingAmount={20} thresholdAmount={200} />

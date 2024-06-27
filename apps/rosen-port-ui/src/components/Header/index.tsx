@@ -1,5 +1,6 @@
 import { productName } from './content';
 import logoIcon from '#/assets/logoNName.svg';
+import { WalletButton } from '../WalletButton';
 export { Header };
 
 function Header() {
@@ -11,9 +12,9 @@ function Header() {
           <img src={logoIcon} alt="" className="h-6 w-18 flex-shrink-0 rounded-full" />
         </div>
       </div>
-      <div className="col-span-2 text-right">
+      <div className="col-span-2 flex justify-end">
         {/* Top Right Section */}
-        <p className="font-bold text-white">Wallet Info Here</p>
+        <WalletButton />
       </div>
     </header>
   );
