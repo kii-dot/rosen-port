@@ -9,7 +9,7 @@ interface BridgeCardProps {
   tokenAmount: number | undefined;
   balanceAmount: number;
   setChainChanged?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  setTokenChanged?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTokenButtonClicked?: React.MouseEventHandler;
   onMaxClick?: React.MouseEventHandler;
   chains: Array<IChain>;
   tokens: Array<IToken>;
@@ -26,9 +26,8 @@ export default function BridgeCard({
   selectedChain,
   selectedToken,
   chains,
-  tokens,
+  onTokenButtonClicked,
   setChainChanged,
-  setTokenChanged,
 }: BridgeCardProps) {
   return (
     <form action="#" className="relative">
@@ -56,9 +55,9 @@ export default function BridgeCard({
                           {selectedChain.id === null ? 'Select Network' : selectedChain.name}
                         </span>
                       </div>
-                      <div className="ml-4">
+                      <div className="sm:ml-4">
                         <ChevronDownIcon
-                          className="h-7 w-7 pl-3 flex-shrink-0 text-gray-300 sm:-ml-1"
+                          className="h-7 w-7 pl-2 flex-shrink-0 text-gray-300 sm:-ml-1"
                           aria-hidden="true"
                         />
                       </div>
@@ -100,59 +99,23 @@ export default function BridgeCard({
         </div>
         <div className="bg-indigo-300/10 rounded-lg pb-2 my-2">
           <div className="flex items-center justify-between space-x-3 px-2 pt-2 sm:px-3">
-            <Listbox as="div" value={selectedToken} onChange={setTokenChanged} className="flex-shrink-0">
-              {({ open }) => (
-                <>
-                  <Label className="sr-only">Token</Label>
-                  <div className="relative">
-                    <ListboxButton className="relative inline-flex items-center whitespace-nowrap font-thin rounded-full bg-black/70 px-2 py-1 text-sm text-white hover:bg-black/90 sm:px-3">
-                      {selectedToken.id === null ? (
-                        <UserCircleIcon className="h-5 w-5 flex-shrink-0 text-gray-300 sm:-ml-1" aria-hidden="true" />
-                      ) : (
-                        <img src={selectedToken.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-                      )}
+            <div className="relative">
+              <button
+                onClick={onTokenButtonClicked}
+                className="relative inline-flex items-center whitespace-nowrap font-thin rounded-full bg-black/70 px-2 py-1 text-sm text-white hover:bg-black/90 sm:px-3"
+              >
+                {selectedToken.id === null ? (
+                  <UserCircleIcon className="h-5 w-5 flex-shrink-0 text-gray-300 sm:-ml-1" aria-hidden="true" />
+                ) : (
+                  <img src={selectedToken.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+                )}
 
-                      <span className={classNames('hidden truncate sm:ml-2 sm:block')}>
-                        {selectedToken.name === null ? 'Select Token' : selectedToken.name}
-                      </span>
-                      <ChevronDownIcon
-                        className="h-7 w-7 pl-3 flex-shrink-0 text-gray-300 sm:-ml-1"
-                        aria-hidden="true"
-                      />
-                    </ListboxButton>
-
-                    <ListboxOptions
-                      transition
-                      className="absolute left-0 z-10 mt-1 max-h-56 overflow-auto rounded-lg bg-petrol-slumber py-3 text-base shadow ring-1 ring-black ring-opacity-5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
-                    >
-                      {tokens.map((selectedToken) => (
-                        <ListboxOption
-                          key={selectedToken.name}
-                          className={({ focus }) =>
-                            classNames(
-                              focus ? 'bg-corbeau' : '',
-                              !focus ? 'bg-petrol-slumber' : '',
-                              'relative cursor-default select-none px-3 py-2',
-                            )
-                          }
-                          value={selectedToken}
-                        >
-                          <div className="flex items-center">
-                            {selectedToken.icon ? (
-                              <img src={selectedToken.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-                            ) : (
-                              <UserCircleIcon className="h-5 w-5 flex-shrink-0 text-white" aria-hidden="true" />
-                            )}
-
-                            <span className="ml-3 block truncate font-thin text-white">{selectedToken.name}</span>
-                          </div>
-                        </ListboxOption>
-                      ))}
-                    </ListboxOptions>
-                  </div>
-                </>
-              )}
-            </Listbox>
+                <span className={classNames('hidden truncate sm:ml-2 sm:block')}>
+                  {selectedToken.name === null ? 'Select Token' : selectedToken.name}
+                </span>
+                <ChevronDownIcon className="h-7 w-7 pl-2 flex-shrink-0 text-gray-300 sm:-ml-1" aria-hidden="true" />
+              </button>
+            </div>
             <div className="flex">
               <span className="text-xs text-gray-500 group-hover:text-gray-600">Bal: {balanceAmount}</span>
             </div>

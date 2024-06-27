@@ -33,7 +33,7 @@ const dummyTransactionData = {
   },
   2: {
     name: 'rsSigUSD Bridge',
-    token: Tokens[2],
+    token: Tokens[1],
     sourceNetwork: Chains[0],
     destNetwork: Chains[1],
     amountFunded: 1900.0,

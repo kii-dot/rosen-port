@@ -7,13 +7,13 @@ import { useState } from 'react';
 import { grayButtonsBg, whiteTextsButtons } from '../genericClassNames';
 
 export function WalletButton() {
-  const [walletAddress, setWalletAddress] = useState('3WwsbBXjT2UBKrjEUqW1Ca4XLhgRt5A7mGKCEmPPBGFNu2F1jV9z');
+  const [walletAddress, setWalletAddress] = useState('');
   const [network, setNetwork] = useState(Chains[0]);
   const [token, setToken] = useState(Tokens[0]);
   const [tokenAmount, setTokenAmount] = useState(3189.54);
   const renderConnectWallet = () => {
     return (
-      <button className="rounded-lg px-6 py-2 bg-teal-800/40 text-teal-400 flex justify-content-center items-center hover:bg-teal-700/40 hover:text-teal-300 active:bg-teal-900/40 active:text-teal-500">
+      <button className="rounded-lg px-6 py-1.5 bg-teal-800/40 text-teal-400 flex justify-content-center items-center hover:bg-teal-700/40 hover:text-teal-300 active:bg-teal-900/40 active:text-teal-500">
         Connect Wallet
       </button>
     );
@@ -54,5 +54,13 @@ export function WalletButton() {
     );
   };
 
-  return <div>{renderActiveWallet()}</div>;
+  const renderWallet = () => {
+    if (walletAddress === undefined || walletAddress === null || walletAddress.length <= 0) {
+      return renderConnectWallet();
+    }
+
+    return renderActiveWallet();
+  };
+
+  return <div>{renderWallet()}</div>;
 }

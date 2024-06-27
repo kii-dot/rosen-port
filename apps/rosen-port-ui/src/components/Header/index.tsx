@@ -2,27 +2,8 @@ import { useState } from 'react';
 import logoIcon from '#/assets/logoNName.svg';
 import { WalletButton } from '../WalletButton';
 export { Header };
-import {
-  Dialog,
-  DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
-} from '@headlessui/react';
-import {
-  ArrowPathIcon,
-  Bars3Icon,
-  ChartPieIcon,
-  CursorArrowRaysIcon,
-  FingerPrintIcon,
-  SquaresPlusIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid';
+import { Dialog, DialogPanel } from '@headlessui/react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import { grayButtonsBg, whiteTextsButtons } from '../genericClassNames';
 import { RosenPortLink } from '../Link';
@@ -52,10 +33,7 @@ function Header() {
     return (
       <Dialog className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className="fixed inset-0 z-10" />
-        <DialogPanel
-          onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-y-0 right-0 z-10 w-full bg-black/70"
-        >
+        <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full bg-black/70">
           <div className="bg-petrol-slumber px-6 py-6">
             <div className="flex items-center justify-end">
               <button
@@ -68,14 +46,22 @@ function Header() {
               </button>
             </div>
             <div className="mt-6 flow-root">
-              <div className="-my-6 divide-y divide-gray-500/10">
-                <div className="space-y-5 py-6 flex flex-col text-gray-500">
+              <div className="-my-6">
+                <div className="space-y-5 pb-6 flex flex-col text-gray-500">
                   <RosenPortLink href="bridge">
                     {/* {`px-4 py-2 rounded-lg hover:outline hover:bg-teal-800 ${activeTab === PageTabs.BridgeTab ? 'text-teal-400' : 'text-gray-400'}`} */}
                     Bridge
                   </RosenPortLink>
                   <RosenPortLink href="txs">Transaction History</RosenPortLink>
                   <RosenPortLink href="batches">Active Batches</RosenPortLink>
+                </div>
+                <div className="mb-4">
+                  <button
+                    onClick={() => console.log('Implmentation of wallet')}
+                    className="w-full sm:w-auto justify-center rounded-lg px-5 py-2 bg-teal-800/40 text-teal-400 flex justify-content-center items-center hover:bg-teal-700/40 hover:text-teal-300 active:bg-teal-900/40 active:text-teal-500"
+                  >
+                    Connect Wallet
+                  </button>
                 </div>
               </div>
             </div>

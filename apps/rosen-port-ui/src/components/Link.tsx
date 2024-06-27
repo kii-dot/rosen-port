@@ -36,7 +36,7 @@ export function RosenPortLink(props) {
     <Link
       href={props.href}
       className={classNames(props.className, 'hover:text-gray-400')}
-      isActiveClassName={'text-teal-500 hover:text-teal-500'}
+      isActiveClassName={'text-teal-400 hover:text-teal-300'}
     >
       {props.children}
     </Link>
