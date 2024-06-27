@@ -1,5 +1,6 @@
 import { Header } from '#/components/Header';
 import { RosenPortLink } from '../Link';
+import light from '#/assets/light.png';
 
 export { AppPage };
 
@@ -10,7 +11,8 @@ interface AppPageProps {
 function AppPage({ children }: AppPageProps) {
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-950 to-black opacity-90 pb-10">
+      <div className="min-h-screen bg-gradient-to-br from-black via-slate-950 to-dark-sea opacity-90 pb-10">
+        <img src={light} className="-z-10 absolute opacity-20 scale-x-[-1]" />
         <Header />
         <div className="mx-auto max-w-7xl lg:py-24 sm:px-6 lg:px-8">
           <div className="relative isolate overflow-hidden px-6 lg:py-24 text-center sm:rounded-3xl sm:px-16">

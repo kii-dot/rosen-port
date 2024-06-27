@@ -8,6 +8,7 @@ export default {
         'ice-climber': '#64d3cb',
         'petrol-slumber': '#2a2d3f',
         'corbeau': '#141320',
+        'dark-sea': '#080813',
       },
     },
   },
