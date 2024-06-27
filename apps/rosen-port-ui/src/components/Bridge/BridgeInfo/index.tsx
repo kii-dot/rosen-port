@@ -75,8 +75,11 @@ export default function BridgeInfo({ capacityFilledAmount, addingAmount, thresho
             </div>
           </div>
           <div>
-            <div className="flex flex-row items-center">Batch transfer</div>
-            <div>threshold (${thresholdAmount})</div>
+            <div className="absolute -mt-16 ml-0.5 h-24 bg-teal-700/40 w-0.5" />
+            <div className="ml-2 text-gray-400 text-left text-xs font-thin">
+              <div>Batch transfer</div>
+              <div>threshold (${thresholdAmount})</div>
+            </div>
           </div>
         </div>
         {/** Current Batch Thredhold Information End*/}

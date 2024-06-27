@@ -7,4 +7,9 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
+  #navbar a.is-active {
+    background-color: #0000;
+    font-size: x-large;
+  }
 }
