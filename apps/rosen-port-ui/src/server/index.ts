@@ -3,7 +3,7 @@ import compression from 'compression';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { appRouter } from '#/trpc/routers';
 import { renderPage } from 'vike/server';
-import { root } from './root.js';
+import { rootPath } from './root.js';
 import cookieParser from 'cookie-parser';
 import { createOpenApiExpressMiddleware } from 'trpc-openapi';
 
@@ -24,7 +24,7 @@ async function startServer() {
     // In production, we need to serve our static assets ourselves.
     // (In dev, Vite's middleware serves our static assets.)
     const sirv = (await import('sirv')).default;
-    app.use(sirv(`${root}/dist/client`));
+    app.use(sirv(`${rootPath}/dist/client`));
   } else {
     // We instantiate Vite's development server and integrate its middleware to our server.
     // ⚠️ We instantiate it only in development. (It isn't needed in production and it
@@ -32,7 +32,7 @@ async function startServer() {
     const vite = await import('vite');
     const viteDevMiddleware = (
       await vite.createServer({
-        root,
+        rootPath,
         server: {
           middlewareMode: true,
         },

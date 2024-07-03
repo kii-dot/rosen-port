@@ -1,50 +1,19 @@
-import { Chains } from '#/constants/chains';
 import { ArrowLongRightIcon } from '@heroicons/react/20/solid';
 import classNames from 'classnames';
 import { RoundedLabel } from '../Label';
-import { Tokens } from '#/constants/tokens';
 import { BlockSearch } from '../Icons';
 import { TxStatus } from '@rosen-port/db';
-import { useEffect, useState } from 'react';
-import { getWindowDimensions } from '#/tools/windowDimensions';
+import { Link } from '../Link';
+import { GetTxUrl } from '#/constants/networkUrl';
+import moment from 'moment';
+import { UITx } from '#/pages/txs/+Page';
+import { Networks } from '#/constants/chains';
+import { truncate } from '#/tools/generic/addressTruncate';
 
 export { TransactionHistory };
 
-const dummyTransactionData = {
-  0: {
-    name: 'rsSigUSD Bridge',
-    token: Tokens[0],
-    sourceNetwork: Chains[0],
-    destNetwork: Chains[1],
-    amountFunded: 900.0,
-    goal: 2000,
-    batchStartTime: '22:37 | 4 Sep 2024',
-    status: TxStatus.confirmed,
-  },
-  1: {
-    name: 'rsSigUSD Bridge',
-    token: Tokens[1],
-    sourceNetwork: Chains[1],
-    destNetwork: Chains[0],
-    amountFunded: 1800.0,
-    goal: 2000,
-    batchStartTime: '21:47 | 4 Sep 2024',
-    status: TxStatus.refund_completed,
-  },
-  2: {
-    name: 'rsSigUSD Bridge',
-    token: Tokens[1],
-    sourceNetwork: Chains[0],
-    destNetwork: Chains[1],
-    amountFunded: 1900.0,
-    goal: 2000,
-    batchStartTime: '20:58 | 4 Sep 2024',
-    status: TxStatus.sent,
-  },
-};
-
 interface TransactionHistoryProps {
-  onBlockSearchClick: React.MouseEventHandler;
+  txsData: Array<UITx>;
 }
 
 const getTxStatus = (txStatus: TxStatus) => {
@@ -52,6 +21,7 @@ const getTxStatus = (txStatus: TxStatus) => {
   var bgColor;
   var statusMessage;
   switch (txStatus) {
+    case TxStatus.drafted:
     case TxStatus.unconfirmed:
     case TxStatus.confirmed:
       strokeColor = 'text-yellow-400';
@@ -87,7 +57,7 @@ const getTxStatus = (txStatus: TxStatus) => {
   );
 };
 
-function TransactionHistory({ onBlockSearchClick }: TransactionHistoryProps) {
+function TransactionHistory({ txsData }: TransactionHistoryProps) {
   return (
     <div>
       {/** Table Head
@@ -101,11 +71,12 @@ function TransactionHistory({ onBlockSearchClick }: TransactionHistoryProps) {
         <div className="col-span-3">Status</div>
         <div className="col-span-2 justify-self-center">Actions</div>
       </div>
-      {Object.keys(dummyTransactionData).map((keyName) => {
-        const tx = dummyTransactionData[keyName];
+      {txsData.map((txData) => {
+        const tx = txData;
+        const createdDate = new Date(tx.createdTime);
         return (
           <div
-            key={keyName}
+            key={tx.id}
             className="grid grid-cols-4 lg:grid-cols-12 text-white py-4 space-y-1 border-b border-slate-800/70"
           >
             {/** Token */}
@@ -114,17 +85,22 @@ function TransactionHistory({ onBlockSearchClick }: TransactionHistoryProps) {
                 <img src={tx.token.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full mr-2" />
                 <div className="pl-2">
                   <div className="text-sm">
-                    {tx.amountFunded} {tx.token.name}
+                    {tx.amount} {tx.token.name}
                   </div>
-                  <div className="text-xs font-thin text-left text-gray-400">~ ${tx.amountFunded}</div>
+                  <div className="text-xs font-thin text-left text-gray-400">~ ${tx.amount}</div>
                 </div>
               </div>
             </div>
             {/** Token end */}
             {/** Date */}
             <div className="col-span-1 lg:col-span-2 flex flex-col items-end lg:items-start content-center">
-              <div className="text-sm">2 Jul 2024</div>
-              <div className="text-xs font-thin text-gray-400">22:35</div>
+              <div className="text-sm">
+                {createdDate.getDate()} {createdDate.toLocaleString('default', { month: 'long' })}{' '}
+                {createdDate.getFullYear()}
+              </div>
+              <div className="text-xs font-thin text-gray-400">
+                {createdDate.getHours()}:{createdDate.getMinutes()}
+              </div>
             </div>
             {/** Date end */}
             {/** Bridge Route */}
@@ -135,8 +111,14 @@ function TransactionHistory({ onBlockSearchClick }: TransactionHistoryProps) {
                 id={tx.sourceNetwork.id}
                 iconOnly
               />
+              <div className="lg:hidden text-xs items-center ml-2 text-gray-300 font-thin">
+                {truncate(tx.sourceWalletAddress, 10, '...')}
+              </div>
               <ArrowLongRightIcon className="w-4 h-4 mx-2" />
               <RoundedLabel name={tx.destNetwork.name} icon={tx.destNetwork.icon} id={tx.destNetwork.id} iconOnly />
+              <div className="lg:hidden text-xs items-center ml-2 text-gray-300 font-thin">
+                {truncate(tx.destWalletAddress, 10, '...')}
+              </div>
             </div>
             {/** Bridge Route end */}
             {/** Status */}
@@ -144,14 +126,13 @@ function TransactionHistory({ onBlockSearchClick }: TransactionHistoryProps) {
             {/** Status End */}
             {/** Block Search Button*/}
             <div className="col-span-2 justify-end lg:col-span-2 flex lg:justify-center lg:items-center">
-              <button
-                onClick={() => {
-                  console.log(keyName);
-                }}
+              <Link
+                href={GetTxUrl(tx.sourceNetwork.name as Networks, tx.id)}
+                target="_blank"
                 className="bg-gray-700/30 w-7 h-7 rounded-full flex items-center justify-center  drop-shadow-sm hover:drop-shadow-md hover:bg-gray-700 hover:text-slate-200 active:bg-gray-900 active:text-slate-300 active:shadow-inner shadow-2x"
               >
                 <BlockSearch className="w-4 h-4" />
-              </button>
+              </Link>
             </div>
             {/** Block Search Button End*/}
           </div>

@@ -7,6 +7,7 @@ export { Link };
 Link.propTypes = {
   className: PropTypes.string,
   href: PropTypes.string.isRequired,
+  target: PropTypes.string,
   isActiveClassName: PropTypes.string,
   children: PropTypes.node,
 };
@@ -17,9 +18,8 @@ function Link(props) {
   const { href } = props;
   const isActive = href === '/' ? urlPathname === href : urlPathname.startsWith(`/${href}`);
   const className = [props.className, isActive && props.isActiveClassName].filter(Boolean).join(' ');
-  console.log(className);
   return (
-    <a className={className} href={props.href}>
+    <a className={className} href={props.href} target={props.target}>
       {props.children}
     </a>
   );

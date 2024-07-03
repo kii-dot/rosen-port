@@ -286,7 +286,9 @@ class TxDB extends DB {
     throw error;
   };
 
-  getUserTxs = async (walletAddress: string): Promise<TxWithContainerInfo> => {
+  getUserTxs = async (
+    walletAddress: string
+  ): Promise<Array<TxWithContainerInfo>> => {
     const { data, error } = await this.supabaseClient
       .from(DbConstants.transactions.name)
       .select(
@@ -315,7 +317,12 @@ class TxDB extends DB {
       );
 
     if (data !== null) {
-      return to.txWithContainerInfo(data[0]);
+      const txWithContainerInfos: Array<TxWithContainerInfo> = [];
+      data.forEach((tx) => {
+        txWithContainerInfos.push(to.txWithContainerInfo(tx));
+      });
+
+      return txWithContainerInfos;
     }
 
     throw error;

@@ -6,3 +6,8 @@ dist/
 /.output/
 .DS_Store
 **/.DS_Store
+
+contracts-bitcoin.json
+contracts-cardano.json
+contracts-ergo.json
+tokensMap.json

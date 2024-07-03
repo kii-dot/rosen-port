@@ -12,4 +12,9 @@
     background-color: #0000;
     font-size: x-large;
   }
+
+  caption {
+    font-size: smaller;
+    @apply text-gray-500;
+  }
 }

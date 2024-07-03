@@ -4,7 +4,9 @@ export { onRenderClient };
 import { PageShell } from './PageShell';
 import type { OnRenderClientAsync } from 'vike/types';
 import { createRoot, hydrateRoot, type Root } from 'react-dom/client';
-import { AuthContainer } from '#/context/authContext';
+import { WalletContainer } from '#/context/walletContext';
+import { TokensMapProvider } from '#/context/tokenMapPovider';
+import fs from 'vite-plugin-fs/browser';
 
 let root: Root;
 
@@ -16,12 +18,16 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   const container = document.getElementById('react-root');
   if (!container) throw new Error('DOM element #react-root not found');
 
+  const tokensMap = JSON.parse(await fs.readFile('/src/configs/tokensMap.json'));
+
   const page = (
-    <AuthContainer.Provider>
-      <PageShell pageContext={pageContext}>
-        <Page {...pageProps} />
-      </PageShell>
-    </AuthContainer.Provider>
+    <TokensMapProvider tokensMap={tokensMap}>
+      <WalletContainer.Provider>
+        <PageShell pageContext={pageContext}>
+          <Page {...pageProps} />
+        </PageShell>
+      </WalletContainer.Provider>
+    </TokensMapProvider>
   );
   if (pageContext.isHydration) {
     root = hydrateRoot(container, page);

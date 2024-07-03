@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
+import { createPortal } from 'react-dom';
 import logoIcon from '#/assets/logoNName.svg';
 import { WalletButton } from '../WalletButton';
 export { Header };
@@ -7,9 +8,13 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import { grayButtonsBg, whiteTextsButtons } from '../genericClassNames';
 import { RosenPortLink } from '../Link';
+import { Tokens } from '#/constants/tokens';
+import { Chains } from '#/constants/chains';
+import { ConnectWalletModal } from '../Modal/WalletModal';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showConnectWalletModal, setShowConnectWalletModal] = useState(false);
   const renderMobileView = () => {
     return (
       <div className="flex lg:hidden">
@@ -71,19 +76,32 @@ function Header() {
     );
   };
 
+  const renderModal = () => {
+    return <ConnectWalletModal open={showConnectWalletModal} setOpen={(open) => setShowConnectWalletModal(open)} />;
+  };
+
   return (
-    <header className="grid grid-cols-4 items-center mx-4 py-4">
+    <header className="grid grid-cols-5 items-center mx-3 py-4">
       <div className="col-span-2 items-center text-lg flex">
         {/* Top Left Section */}
-        <div className="mr-2">
+        <div className="ml-3 mr-2">
           <img src={logoIcon} alt="" className="h-6 w-18 flex-shrink-0 rounded-full" />
         </div>
       </div>
-      <div className="col-span-2 flex justify-end space-x-2">
+      <div className="col-span-3 flex justify-end space-x-2">
         {/* Top Right Section */}
-        <WalletButton />
+        <WalletButton
+          onConnectWalletClicked={() => {
+            setShowConnectWalletModal(true);
+          }}
+          walletAddress=""
+          tokenAmount={1233}
+          token={Tokens[0]}
+          network={Chains[0]}
+        />
         {renderMobileView()}
         {renderDialog()}
+        {renderModal()}
       </div>
     </header>
   );
