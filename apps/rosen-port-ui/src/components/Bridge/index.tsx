@@ -13,9 +13,10 @@ const fees = 1.5;
 
 interface BridgeProps {
   onTokenButtonClicked?: React.MouseEventHandler;
+  onInitiateBridgeButtonClicked?: React.MouseEventHandler;
 }
 
-function Bridge({ onTokenButtonClicked }: BridgeProps) {
+function Bridge({ onTokenButtonClicked, onInitiateBridgeButtonClicked }: BridgeProps) {
   return (
     <div className="lg:grid lg:grid-cols-2">
       <div className="flex-row lg:col-span-1 lg:pr-10">
@@ -49,7 +50,10 @@ function Bridge({ onTokenButtonClicked }: BridgeProps) {
           tokenAmount={undefined}
         ></BridgeCard>
         <div className="text-gray-400 text-xs font-thin flex my-5">Fees: ~${fees}(1.00%)</div>
-        <button className="bg-teal-500 w-full rounded-lg py-2 hover:bg-teal-400 hover:text-gray-900 active:bg-teal-600 active:text-gray-800">
+        <button
+          onClick={onInitiateBridgeButtonClicked}
+          className="bg-teal-500 w-full rounded-lg py-2 hover:bg-teal-400 hover:text-gray-900 active:bg-teal-600 active:text-gray-800"
+        >
           Initiate Bridge
         </button>
       </div>
