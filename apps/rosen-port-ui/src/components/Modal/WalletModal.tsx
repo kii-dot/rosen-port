@@ -1,7 +1,7 @@
 import { Chains, NetworkChains } from '#/constants/chains';
 import { IChain } from '#/types/chains';
 import { useState } from 'react';
-import Modal from '.';
+import Modal from './ModalBase';
 import tick from '#/assets/genericIcon/tickCircle.svg';
 import tickFull from '#/assets/genericIcon/tickFull.svg';
 import {
