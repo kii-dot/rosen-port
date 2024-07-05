@@ -7,6 +7,8 @@ import vespr from '#/assets/wallets/vespr.svg';
 import xdefi from '#/assets/wallets/xdefi.svg';
 import { Networks } from '#/constants/chains';
 import classNames from 'classnames';
+import { CardanoWalletType } from '#/tools/wallet/cardano/CardanoWallet';
+import { ErgoWalletType } from '#/tools/wallet/ergo/ErgoWallet';
 
 interface IconProps {
   className?: string;
@@ -46,47 +48,55 @@ export function XDefiIcon({ className }: IconProps) {
 export interface IWallet {
   name: string;
   network: Networks;
+  walletType: ErgoWalletType | CardanoWalletType;
   icon: (className: IconProps) => JSX.Element;
 }
 
 export const NautilusWallet: IWallet = {
   name: 'Nautilus',
   network: Networks.Ergo,
+  walletType: ErgoWalletType.Nautilus,
   icon: NautilusIcon,
 };
 
 export const NamiWallet: IWallet = {
   name: 'Nami',
   network: Networks.Cardano,
+  walletType: CardanoWalletType.Nami,
   icon: NamiIcon,
 };
 
 export const EternlWallet: IWallet = {
   name: 'Eternl',
   network: Networks.Cardano,
+  walletType: CardanoWalletType.Eternl,
   icon: EternlIcon,
 };
 
 export const FlintWallet: IWallet = {
   name: 'Flint',
   network: Networks.Cardano,
+  walletType: CardanoWalletType.Flint,
   icon: FlintIcon,
 };
 
 export const LaceWallet: IWallet = {
   name: 'Lace',
   network: Networks.Cardano,
+  walletType: CardanoWalletType.Lace,
   icon: LaceIcon,
 };
 
 export const VesprWallet: IWallet = {
   name: 'Vespr',
   network: Networks.Cardano,
+  walletType: CardanoWalletType.Vespr,
   icon: VesprIcon,
 };
 
 export const XDefiWallet: IWallet = {
   name: 'XDefi',
   network: Networks.Bitcoin,
+  walletType: CardanoWalletType.Nami,
   icon: XDefiIcon,
 };

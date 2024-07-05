@@ -1,3 +1,6 @@
+import { ConnectorAPI } from '#/tools/wallet/types';
+import { EipWalletApi } from '@rosen-ui/wallet-api';
+
 export type { PageProps };
 
 // https://vike.dev/pageContext#typescript
@@ -15,6 +18,19 @@ declare global {
       };
     }
   }
+}
+
+declare global {
+  let cardano: { [key: string]: ConnectorAPI };
+}
+
+declare global {
+  let ergoConnector: {
+    [key: string]: {
+      connect: (params: { createErgoObject: boolean }) => Promise<boolean>;
+      getContext: () => Promise<EipWalletApi>;
+    };
+  };
 }
 
 type Page = (pageProps: PageProps) => React.ReactElement;

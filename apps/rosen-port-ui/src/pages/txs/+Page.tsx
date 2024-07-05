@@ -2,7 +2,6 @@ import { TransactionHistory } from '#/components/TransactionHistory';
 
 import { AppPage } from '#/components/Page/AppPage';
 import { trpc } from '#/trpc/client';
-import { useTokensMap } from '#/context/hooks/useTokensMap';
 import { useEffect, useState } from 'react';
 import { Tokens } from '#/constants/tokens';
 import { Chains, getChains } from '#/constants/chains';
@@ -25,7 +24,6 @@ export interface UITx {
 
 function Page() {
   const [txs, setTxs] = useState<Array<UITx>>([]);
-  const tokenMaps = useTokensMap();
   const walletAddress = '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops';
   useEffect(() => {
     const createResp = async () => {

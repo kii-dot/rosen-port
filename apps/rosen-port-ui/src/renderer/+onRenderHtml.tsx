@@ -1,7 +1,6 @@
 // https://vike.dev/onRenderHtml
 export { onRenderHtml };
 
-import fs from 'fs';
 import ReactDOMServer from 'react-dom/server';
 import { PageShell } from './PageShell';
 import { escapeInject, dangerouslySkipEscape } from 'vike/server';
@@ -9,29 +8,19 @@ import logoUrl from '#/assets/logo.svg';
 import type { OnRenderHtmlAsync } from 'vike/types';
 import '#/assets/index.css';
 import { WalletContainer } from '#/context/walletContext';
-import { TokensMapProvider } from '#/context/tokenMapPovider';
-import path from 'path';
-import { rootPath } from '#/server/root';
 
 const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRenderHtmlAsync> => {
   const { Page, pageProps } = pageContext;
-  const tokensMap = JSON.parse(
-    fs.readFileSync(path.resolve(rootPath + '/src/configs/tokensMap.json'), {
-      encoding: 'utf-8',
-    }),
-  );
 
   // This onRenderHtml() hook only supports SSR, see https://vike.dev/render-modes for how to modify
   // onRenderHtml() to support SPA
   if (!Page) throw new Error('My render() hook expects pageContext.Page to be defined');
   const pageHtml = ReactDOMServer.renderToString(
-    <TokensMapProvider tokensMap={tokensMap}>
-      <WalletContainer.Provider>
-        <PageShell pageContext={pageContext}>
-          <Page {...pageProps} />
-        </PageShell>
-      </WalletContainer.Provider>
-    </TokensMapProvider>,
+    <WalletContainer.Provider>
+      <PageShell pageContext={pageContext}>
+        <Page {...pageProps} />
+      </PageShell>
+    </WalletContainer.Provider>,
   );
 
   // See https://vike.dev/head

@@ -1,4 +1,4 @@
-import { Chains, NetworkChains } from '#/constants/chains';
+import { NetworkChains } from '#/constants/chains';
 import { IChain } from '#/types/chains';
 import { useState } from 'react';
 import Modal from './ModalBase';
@@ -16,8 +16,11 @@ import {
   XDefiWallet,
 } from '../Icons';
 import { H3, H4 } from '../Texts';
-import { RoundedLabel, RoundedLabelButton } from '../Label';
+import { RoundedLabelButton } from '../Label';
 import classNames from 'classnames';
+import { ErgoWalletType } from '#/tools/wallet/ergo/ErgoWallet';
+import { CardanoWalletType } from '#/tools/wallet/cardano/CardanoWallet';
+import { isWalletAvailable } from '#/tools/wallet';
 
 const Wallets = {
   Bitcoin: {
@@ -37,20 +40,11 @@ const Wallets = {
 interface WalletModalProps {
   open: boolean;
   setOpen: (boolean: boolean) => void;
-  onWalletClick: React.MouseEventHandler;
+  onWalletClick: (event: React.MouseEvent, wallet: IWallet) => void;
 }
 
 export const ConnectWalletModal = ({ open, setOpen, onWalletClick }: WalletModalProps) => {
   const [selectedNetwork, setSelectedNetwork] = useState('');
-  const renderWallet = (wallet: IWallet) => {
-    return (
-      <div>
-        <wallet.icon />
-        <div>{wallet.name}</div>
-        <div>{wallet.network}</div>
-      </div>
-    );
-  };
 
   const renderNetworks = () => {
     const keys = Object.keys(Wallets);
@@ -101,11 +95,16 @@ export const ConnectWalletModal = ({ open, setOpen, onWalletClick }: WalletModal
     return (
       <div className="flex flex-row gap-4 flex-wrap">
         {wallets.map((wallet) => {
+          const isAvailable: boolean = isWalletAvailable(wallet.walletType);
           return (
             <button
               key={wallet.name}
-              onClick={onWalletClick}
-              className="flex flex-col bg-gray-900/60 items-center w-20 rounded-lg px-2 py-2 hover:bg-gray-800/80 active:bg-gray-900"
+              disabled={!isAvailable}
+              onClick={(e) => onWalletClick(e, wallet)}
+              className={classNames(
+                isAvailable ? 'bg-gray-900/60 hover:bg-gray-800/80 active:bg-gray-900' : 'bg-gray-100/50',
+                'flex flex-col items-center w-20 rounded-lg px-2 py-2',
+              )}
             >
               <wallet.icon className="h-12 w-12 rounded-full px-2" />
               <H4>{wallet.name}</H4>

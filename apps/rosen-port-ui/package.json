@@ -3,6 +3,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "npm run server:dev",
+    "get-config": "npx @rosen-bridge/cli download-assets --chain-type mainnet --out configs --include-prereleases",
     "lint": "eslint . --max-warnings 0",
     "prettier": "prettier --write .",
     "prod": "npm run lint && npm run build && npm run server:prod",
@@ -13,12 +14,14 @@
     "start": "npm run prod"
   },
   "dependencies": {
+    "@emurgo/cardano-serialization-lib-asmjs": "^11.5.0",
     "@fleet-sdk/common": "^0.3.4",
     "@fleet-sdk/core": "^0.3.4",
     "@headlessui/react": "^2.1.0",
     "@heroicons/react": "^2.1.4",
     "@rosen-port/db": "^0.1.0",
     "@rosen-port/multi-chain-payment": "^0.1.0",
+    "@rosen-ui/wallet-api": "^1.0.1",
     "@svgr/core": "^5.1.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tanstack/react-query": "^4.36.1",
@@ -62,6 +65,9 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
     "@iconify/json": "^2.2.165",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.6",
@@ -77,6 +83,7 @@
     "@vitejs/plugin-basic-ssl": "^1.0.2",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.16",
+    "babel-eslint": "^10.1.0",
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
@@ -88,6 +95,7 @@
     "tsconfig-paths": "^4.2.0",
     "unplugin-icons": "^0.18.1",
     "vite-plugin-node-polyfills": "^0.22.0",
-    "vite-plugin-vercel": "^2.0.0"
+    "vite-plugin-vercel": "^2.0.0",
+    "vite-plugin-wasm": "^3.3.0"
   }
 }

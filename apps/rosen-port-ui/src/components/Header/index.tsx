@@ -1,5 +1,4 @@
-import { MouseEvent, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useState } from 'react';
 import logoIcon from '#/assets/logoNName.svg';
 import { WalletButton } from '../WalletButton';
 export { Header };
@@ -11,6 +10,9 @@ import { RosenPortLink } from '../Link';
 import { Tokens } from '#/constants/tokens';
 import { Chains } from '#/constants/chains';
 import { ConnectWalletModal } from '../Modal/WalletModal';
+import { ErgoWallet, ErgoWalletType } from '#/tools/wallet/ergo/ErgoWallet';
+import { getWallet } from '#/tools/wallet';
+import { decodeWasmValue } from '#/tools/wallet/cardano/cardanoDecoder';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -77,7 +79,21 @@ function Header() {
   };
 
   const renderModal = () => {
-    return <ConnectWalletModal open={showConnectWalletModal} setOpen={(open) => setShowConnectWalletModal(open)} />;
+    const nautilusWallet = new ErgoWallet(ErgoWalletType.Nautilus);
+
+    return (
+      <ConnectWalletModal
+        open={showConnectWalletModal}
+        setOpen={(open) => setShowConnectWalletModal(open)}
+        onWalletClick={async (e, wallet) => {
+          const browserWallet = getWallet(wallet.walletType);
+          console.log('wallet clicked');
+          console.log(await browserWallet.connectWallet());
+          console.log('wallet connected');
+          console.log(decodeWasmValue(await browserWallet.getBalance()));
+        }}
+      />
+    );
   };
 
   return (
