@@ -1,4 +1,5 @@
 import {
+  AssetEntry,
   CipWalletApi,
   EncodedAddress,
   EncodedAmount,
@@ -9,6 +10,7 @@ import {
   RawUnsignedTx,
   TxId,
 } from '@rosen-ui/wallet-api';
+import { decodeWasmAddress, decodeWasmValue } from './cardanoDecoder';
 
 export enum CardanoWalletType {
   Nami = 'nami',
@@ -21,7 +23,7 @@ export enum CardanoWalletType {
 export interface CipWalletBase {
   getUtxos: (amount?: EncodedAmount, paginate?: Paging) => Promise<EncodedTxOut[] | undefined>;
   getChangeAddress: () => Promise<EncodedAddress>;
-  getBalance: () => Promise<EncodedBalance>;
+  getBalance: (policyId: string) => Promise<AssetEntry>;
   signTx: (tx: RawUnsignedTx, partialSign: boolean) => Promise<RawTx>;
   submitTx: (tx: RawTx) => Promise<TxId>;
   connectWallet: () => Promise<boolean>;
@@ -68,18 +70,19 @@ export class CardanoWallet implements CipWalletBase {
       throw new Error('Wallet Failed to Connect');
     }
 
-    return await this.wallet.getChangeAddress();
+    return await decodeWasmAddress(await this.wallet.getChangeAddress());
   }
 
-  async getBalance(): Promise<string> {
+  async getBalance(policyId: string): Promise<AssetEntry> {
     this.ensureAvailable();
     if (!this.wallet) {
       throw new Error('Wallet Failed to Connect');
     }
 
-    console.log('getting balance');
-    console.log(this.wallet);
-    return await this.wallet.getBalance();
+    const balance = await this.wallet.getBalance();
+    const tokenBalance = (await decodeWasmValue(balance)).filter((token) => token.policyId === policyId)[0];
+
+    return tokenBalance;
   }
 
   async signTx(tx: string, partialSign: boolean): Promise<string> {

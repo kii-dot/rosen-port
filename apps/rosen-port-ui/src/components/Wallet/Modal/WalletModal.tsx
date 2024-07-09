@@ -1,7 +1,7 @@
 import { NetworkChains } from '#/constants/chains';
 import { IChain } from '#/types/chains';
 import { useState } from 'react';
-import Modal from './ModalBase';
+import Modal from '../../Modal/ModalBase';
 import tick from '#/assets/genericIcon/tickCircle.svg';
 import tickFull from '#/assets/genericIcon/tickFull.svg';
 import {
@@ -14,12 +14,10 @@ import {
   NautilusWallet,
   VesprWallet,
   XDefiWallet,
-} from '../Icons';
-import { H3, H4 } from '../Texts';
-import { RoundedLabelButton } from '../Label';
+} from '../../Icons';
+import { H3, H4 } from '../../Texts';
+import { RoundedLabelButton } from '../../Label';
 import classNames from 'classnames';
-import { ErgoWalletType } from '#/tools/wallet/ergo/ErgoWallet';
-import { CardanoWalletType } from '#/tools/wallet/cardano/CardanoWallet';
 import { isWalletAvailable } from '#/tools/wallet';
 
 const Wallets = {
@@ -93,7 +91,7 @@ export const ConnectWalletModal = ({ open, setOpen, onWalletClick }: WalletModal
     });
 
     return (
-      <div className="flex flex-row gap-4 flex-wrap">
+      <div className="flex flex-col md:flex-row gap-4 flex-wrap">
         {wallets.map((wallet) => {
           const isAvailable: boolean = isWalletAvailable(wallet.walletType);
           return (
@@ -103,12 +101,14 @@ export const ConnectWalletModal = ({ open, setOpen, onWalletClick }: WalletModal
               onClick={(e) => onWalletClick(e, wallet)}
               className={classNames(
                 isAvailable ? 'bg-gray-900/60 hover:bg-gray-800/80 active:bg-gray-900' : 'bg-gray-100/50',
-                'flex flex-col items-center w-20 rounded-lg px-2 py-2',
+                'flex flex-row space-x-2 md:space-x-0 md:flex-col items-center md:w-20 rounded-lg px-2 py-2',
               )}
             >
               <wallet.icon className="h-12 w-12 rounded-full px-2" />
-              <H4>{wallet.name}</H4>
-              <div className="text-gray-500 text-sm">{wallet.network}</div>
+              <div className="text-left md:text-center">
+                <H4>{wallet.name}</H4>
+                <div className="text-gray-500 text-sm">{wallet.network}</div>
+              </div>
             </button>
           );
         })}
@@ -120,12 +120,12 @@ export const ConnectWalletModal = ({ open, setOpen, onWalletClick }: WalletModal
     <Modal title={'Connect Wallet'} open={open} setOpen={setOpen}>
       <div>
         <div>
-          <H3 className="sm:mt-8 sm:mb-2">Networks:</H3>
+          <H3 className="mt-8 mb-2">Networks:</H3>
           <div>{renderNetworks()}</div>
         </div>
         <div>
-          <H3 className="sm:mt-8 sm:mb-2">Wallets:</H3>
-          <div>{renderWallets()}</div>
+          <H3 className="mt-8 mb-2">Wallets:</H3>
+          <div className="h-48 overflow-y-auto md:h-auto">{renderWallets()}</div>
         </div>
       </div>
     </Modal>
