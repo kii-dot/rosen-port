@@ -1,6 +1,8 @@
 import { Header } from '#/components/Header';
 import { RosenPortLink } from '../Link';
 import light from '#/assets/light.png';
+import PageNotification from '../Notification';
+import { useState } from 'react';
 
 export { AppPage };
 
@@ -9,6 +11,7 @@ interface AppPageProps {
 }
 
 function AppPage({ children }: AppPageProps) {
+  const [showNotification, setShowNotification] = useState<boolean>(false);
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-black via-slate-950 to-dark-sea opacity-90 pb-10">
@@ -24,6 +27,13 @@ function AppPage({ children }: AppPageProps) {
               <RosenPortLink href="txs">Transaction History</RosenPortLink>
               <RosenPortLink href="batches">Active Batches</RosenPortLink>
             </nav>
+            <PageNotification
+              show={showNotification}
+              cancelClicked={() => setShowNotification(false)}
+              title={'Bridge Transfer Initiated'}
+            >
+              Initiated 0.00125 rsBTC ($87.53) bridge from Ergo to Bitcoin
+            </PageNotification>
             <div className="mt-6 flex-col-grow-1">{children}</div>
           </div>
         </div>

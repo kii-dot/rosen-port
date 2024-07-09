@@ -1,22 +1,26 @@
 import { useState } from 'react';
 import logoIcon from '#/assets/logoNName.svg';
-import { WalletButton } from '../WalletButton';
+import { WalletButton } from '../Wallet/Button';
 export { Header };
 import { Dialog, DialogPanel } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import { grayButtonsBg, whiteTextsButtons } from '../genericClassNames';
 import { RosenPortLink } from '../Link';
-import { Tokens } from '#/constants/tokens';
-import { Chains } from '#/constants/chains';
-import { ConnectWalletModal } from '../Modal/WalletModal';
-import { ErgoWallet, ErgoWalletType } from '#/tools/wallet/ergo/ErgoWallet';
+import { ConnectWalletModal } from '../Wallet/Modal/WalletModal';
 import { getWallet } from '#/tools/wallet';
-import { decodeWasmValue } from '#/tools/wallet/cardano/cardanoDecoder';
+import { IWallet } from '../Icons';
+import { useWallet } from '#/context/walletContext';
+import { ActiveWallet } from '../Wallet/ActiveWallet';
+import { WalletDetailsBar } from '../Wallet/DetailsBar';
 
 function Header() {
+  const { currentWalletAddress, walletNetwork, tokenBalance, walletDetails, connectWallet, getTokenAmount } =
+    useWallet();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showConnectWalletModal, setShowConnectWalletModal] = useState(false);
+
   const renderMobileView = () => {
     return (
       <div className="flex lg:hidden">
@@ -62,13 +66,29 @@ function Header() {
                   <RosenPortLink href="txs">Transaction History</RosenPortLink>
                   <RosenPortLink href="batches">Active Batches</RosenPortLink>
                 </div>
+                <div className="w-full bg-gray-700 h-0.5 mb-5" />
                 <div className="mb-4">
-                  <button
-                    onClick={() => console.log('Implmentation of wallet')}
-                    className="w-full sm:w-auto justify-center rounded-lg px-5 py-2 bg-teal-800/40 text-teal-400 flex justify-content-center items-center hover:bg-teal-700/40 hover:text-teal-300 active:bg-teal-900/40 active:text-teal-500"
+                  <WalletButton
+                    onConnectWalletClicked={() => {
+                      setShowConnectWalletModal(true);
+                    }}
+                    showActiveWallet={currentWalletAddress !== '' && currentWalletAddress.length >= 0}
+                    isLoading={false}
                   >
-                    Connect Wallet
-                  </button>
+                    <WalletDetailsBar
+                      walletAddress={currentWalletAddress}
+                      tokenAmount={getTokenAmount()}
+                      token={tokenBalance?.token}
+                      network={walletNetwork ? walletNetwork : undefined}
+                      walletDetails={walletDetails ? walletDetails : undefined}
+                      onNetworkClicked={() => {
+                        console.log('activeWalletClicked');
+                      }}
+                      onLogOutClicked={() => {
+                        console.log('log out clicked');
+                      }}
+                    />
+                  </WalletButton>
                 </div>
               </div>
             </div>
@@ -78,19 +98,19 @@ function Header() {
     );
   };
 
-  const renderModal = () => {
-    const nautilusWallet = new ErgoWallet(ErgoWalletType.Nautilus);
+  const onWalletClick = async (wallet: IWallet) => {
+    const browserWallet = getWallet(wallet.walletType);
+    connectWallet(wallet, browserWallet);
+    setShowConnectWalletModal(false);
+  };
 
+  const renderModal = () => {
     return (
       <ConnectWalletModal
         open={showConnectWalletModal}
         setOpen={(open) => setShowConnectWalletModal(open)}
         onWalletClick={async (e, wallet) => {
-          const browserWallet = getWallet(wallet.walletType);
-          console.log('wallet clicked');
-          console.log(await browserWallet.connectWallet());
-          console.log('wallet connected');
-          console.log(decodeWasmValue(await browserWallet.getBalance()));
+          onWalletClick(wallet);
         }}
       />
     );
@@ -110,11 +130,20 @@ function Header() {
           onConnectWalletClicked={() => {
             setShowConnectWalletModal(true);
           }}
-          walletAddress=""
-          tokenAmount={1233}
-          token={Tokens[0]}
-          network={Chains[0]}
-        />
+          showActiveWallet={currentWalletAddress !== '' && currentWalletAddress.length >= 0}
+          isLoading={false}
+        >
+          <ActiveWallet
+            walletAddress={currentWalletAddress}
+            tokenAmount={getTokenAmount()}
+            token={tokenBalance?.token}
+            network={walletNetwork ? walletNetwork : undefined}
+            walletDetails={walletDetails ? walletDetails : undefined}
+            onActiveWalletClicked={() => {
+              console.log('activeWalletClicked');
+            }}
+          />
+        </WalletButton>
         {renderMobileView()}
         {renderDialog()}
         {renderModal()}

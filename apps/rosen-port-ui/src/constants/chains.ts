@@ -4,9 +4,9 @@ import cardanoIcon from '#/assets/chainIcon/cardano.svg';
 import bitcoinIcon from '#/assets/chainIcon/bitcoin.svg';
 
 export enum Networks {
-  Ergo = 'Ergo',
-  Cardano = 'Cardano',
-  Bitcoin = 'Bitcoin',
+  Ergo = 'ergo',
+  Cardano = 'cardano',
+  Bitcoin = 'bitcoin',
 }
 
 const ErgoChain: IChain = {
