@@ -120,9 +120,9 @@ function Header() {
     <header className="grid grid-cols-5 items-center mx-3 py-4">
       <div className="col-span-2 items-center text-lg flex">
         {/* Top Left Section */}
-        <div className="ml-3 mr-2">
+        <RosenPortLink href="/" className="ml-3 mr-2">
           <img src={logoIcon} alt="" className="h-6 w-18 flex-shrink-0 rounded-full" />
-        </div>
+        </RosenPortLink>
       </div>
       <div className="col-span-3 flex justify-end space-x-2">
         {/* Top Right Section */}

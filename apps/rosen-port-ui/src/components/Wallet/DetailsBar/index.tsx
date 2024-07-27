@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import { grayButtonsBg, whiteTextsButtons } from '../../genericClassNames';
 import { IWallet, LogOut } from '#/components/Icons';
 import { IChain, IToken } from '#/types/chains';
+import { ChainSelector } from '../ChainSelector';
+import { Chains } from '#/constants/chains';
 
 interface WalletDetailsProps {
   walletAddress: string;
@@ -45,24 +47,11 @@ export function WalletDetailsBar({
         </div>
       </div>
       <div className="flex flex-row space-x-4">
-        <button
-          onClick={onNetworkClicked}
-          className={classNames(
-            'flex flex-row space-x-1 h-9 rounded-lg items-center px-1 ',
-            whiteTextsButtons,
-            grayButtonsBg,
-          )}
-        >
-          {network !== undefined ? (
-            <div className="pl-2 text-white font-thin text-sm flex flex-row">
-              <img src={network.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-              <span className={'hidden truncate sm:ml-2 sm:block'}>{network.name}</span>
-              <ChevronDownIcon className="text-white h-5 w-5" />
-            </div>
-          ) : (
-            <div />
-          )}
-        </button>
+        <ChainSelector
+          selectedChain={Chains[0]}
+          chains={Chains}
+          buttonClassName="bg-gray-600/40 hover:bg-gray-600/60 active:bg-gray-600/20"
+        />
         <button onClick={onLogOutClicked}>
           <LogOut />
         </button>

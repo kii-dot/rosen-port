@@ -1,19 +1,20 @@
 import { ArrowLongRightIcon } from '@heroicons/react/20/solid';
 import classNames from 'classnames';
 import { RoundedLabel } from '../Label';
-import { BlockSearch } from '../Icons';
+import { BlockSearch, Spinner } from '../Icons';
 import { TxStatus } from '@rosen-port/db';
 import { Link } from '../Link';
 import { GetTxUrl } from '#/constants/networkUrl';
-import moment from 'moment';
 import { UITx } from '#/pages/txs/+Page';
 import { Networks } from '#/constants/chains';
 import { truncate } from '#/tools/generic/addressTruncate';
+import Skeleton from 'react-loading-skeleton';
 
 export { TransactionHistory };
 
 interface TransactionHistoryProps {
   txsData: Array<UITx>;
+  isLoading?: boolean;
 }
 
 const getTxStatus = (txStatus: TxStatus) => {
@@ -57,7 +58,7 @@ const getTxStatus = (txStatus: TxStatus) => {
   );
 };
 
-function TransactionHistory({ txsData }: TransactionHistoryProps) {
+function TransactionHistory({ txsData, isLoading }: TransactionHistoryProps) {
   const renderRealTxs = () => {
     return txsData.map((txData) => {
       const tx = txData;
@@ -110,7 +111,7 @@ function TransactionHistory({ txsData }: TransactionHistoryProps) {
           {/** Block Search Button*/}
           <div className="col-span-2 justify-end lg:col-span-2 flex lg:justify-center lg:items-center">
             <Link
-              href={GetTxUrl(tx.sourceNetwork.name as Networks, tx.id)}
+              href={GetTxUrl(tx.sourceNetwork.id as Networks, tx.id)}
               target="_blank"
               className="bg-gray-700/30 w-7 h-7 rounded-full flex items-center justify-center  drop-shadow-sm hover:drop-shadow-md hover:bg-gray-700 hover:text-slate-200 active:bg-gray-900 active:text-slate-300 active:shadow-inner shadow-2x"
             >
@@ -126,8 +127,19 @@ function TransactionHistory({ txsData }: TransactionHistoryProps) {
   const renderTxs = () => {
     if (txsData.length > 0) {
       return renderRealTxs();
+    } else if (isLoading) {
+      return (
+        <div className="text-white text-lg tracking-wider flex h-32 justify-center items-center font-thin">
+          <Spinner className="w-6 h-6" />
+        </div>
+      );
     } else {
       // Do skeleton here
+      return (
+        <div className="text-white text-lg tracking-wider flex h-32 justify-center items-center font-thin">
+          No Txs History Available
+        </div>
+      );
     }
   };
 

@@ -5,7 +5,7 @@ import { H3, H4 } from '../Texts';
 interface TokenModalProps {
   open: boolean;
   setOpen: (boolean: boolean) => void;
-  onTokenClicked: React.MouseEventHandler;
+  onTokenClicked: (token: IToken) => void;
   tokens: Array<IToken>;
 }
 
@@ -19,7 +19,7 @@ export const TokenModal = ({ open, setOpen, tokens, onTokenClicked }: TokenModal
         <div className="text-white flex flex-col text-left items-start">
           {tokens.map((token) => {
             return (
-              <button key={token.id} onClick={onTokenClicked}>
+              <button key={token.id} onClick={() => onTokenClicked(token)}>
                 {token.name}
               </button>
             );

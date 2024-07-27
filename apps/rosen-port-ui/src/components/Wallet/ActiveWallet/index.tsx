@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import { grayButtonsBg, whiteTextsButtons } from '../../genericClassNames';
 import { IWallet } from '#/components/Icons';
 import { IChain, IToken } from '#/types/chains';
+import { ChainSelector } from '../ChainSelector';
+import { Chains } from '#/constants/chains';
 
 interface WalletButtonProps {
   walletAddress: string;
@@ -25,7 +27,7 @@ export function ActiveWallet({
   return (
     <div className="flex flex-row items-center space-x-2">
       {/** Value & Network */}
-      <button
+      <div
         onClick={onActiveWalletClicked}
         className={classNames(
           'flex flex-row space-x-1 h-9 rounded-lg items-center px-1 ',
@@ -40,16 +42,12 @@ export function ActiveWallet({
             </div>
           </div>
         </div>
-        {network !== undefined ? (
-          <div className="text-white font-thin text-sm flex flex-row">
-            <img src={network.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-            <span className={'hidden truncate sm:ml-2 sm:block'}>{network.name}</span>
-            <ChevronDownIcon className="text-white h-5 w-5" />
-          </div>
-        ) : (
-          <div />
-        )}
-      </button>
+        <ChainSelector
+          selectedChain={Chains[0]}
+          chains={Chains}
+          buttonClassName="pl-0 bg-transparent pr-0 hover:bg-transparent active:bg-transparent"
+        />
+      </div>
       {/** Value & Network End */}
       {/** Wallet Address */}
       <button

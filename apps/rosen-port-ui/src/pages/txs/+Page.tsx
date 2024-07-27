@@ -24,6 +24,7 @@ export interface UITx {
 
 function Page() {
   const [txs, setTxs] = useState<Array<UITx>>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const walletAddress = '9hrT4Kt8R4NAJoYiHZ6Cnpo4BcGLA32S58UjckJSxAcRF1xUops';
   useEffect(() => {
     const createResp = async () => {
@@ -45,15 +46,17 @@ function Page() {
           });
         });
         setTxs(uiTx);
+        setIsLoading(false);
       }
     };
 
     createResp();
   }, []);
+
   return (
     <AppPage>
       <div className="lg:hidden text-2xl text-white justify-start flex mb-8">Transaction History</div>
-      <TransactionHistory txsData={txs} />
+      <TransactionHistory txsData={txs} isLoading={isLoading} />
     </AppPage>
   );
 }

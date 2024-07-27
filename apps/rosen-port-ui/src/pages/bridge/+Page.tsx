@@ -2,14 +2,21 @@ import { Bridge } from '#/components/Bridge';
 import { ConfirmationModal, TokenModal } from '#/components/Modal';
 
 import { AppPage } from '#/components/Page/AppPage';
-import { Tokens } from '#/constants/tokens';
+import { Chains } from '#/constants/chains';
+import { SigUSDToken, Tokens } from '#/constants/tokens';
+import { IChain, IToken } from '#/types/chains';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export { Page };
 
 function Page() {
+  const { register, handleSubmit } = useForm();
   const [openTokenModal, setOpenTokenModal] = useState(false);
   const [openConfirmationModal, setOpenConfirmationModal] = useState(false);
+  const [originChain, setOriginChain] = useState<IChain | null>(null);
+  const [destinationChain, setDestinationChain] = useState<IChain | null>(null);
+  const [selectedToken, setSelectedToken] = useState(SigUSDToken);
 
   const confirmAndInitiateBridge = () => {
     console.log('confirm and initiate bridge');
@@ -26,8 +33,8 @@ function Page() {
     );
   };
 
-  const setToken = () => {
-    console.log('set token');
+  const setToken = (token: IToken) => {
+    setSelectedToken(token);
     setOpenTokenModal(false);
   };
 
@@ -36,10 +43,30 @@ function Page() {
       <TokenModal
         open={openTokenModal}
         setOpen={(open) => setOpenTokenModal(open)}
-        onTokenClicked={() => setToken()}
+        onTokenClicked={(token) => setToken(token)}
         tokens={Tokens}
       />
     );
+  };
+
+  const setOriginChainClicked = (chain: IChain) => {
+    if (destinationChain !== null && chain.id === destinationChain.id) {
+      setDestinationChain(null);
+    }
+
+    setOriginChain(chain);
+  };
+
+  const setDestinationChainClicked = (chain: IChain) => {
+    if (originChain !== null && chain.id === originChain.id) {
+      setOriginChain(null);
+    }
+
+    setDestinationChain(chain);
+  };
+
+  const onSubmit = (d) => {
+    alert(JSON.stringify(d));
   };
 
   return (
@@ -47,8 +74,18 @@ function Page() {
       <AppPage>
         <div className="lg:hidden text-2xl text-white justify-start flex mb-8">Bridge</div>
         <Bridge
+          onSubmit={handleSubmit(onSubmit)}
           onTokenButtonClicked={() => setOpenTokenModal(true)}
-          onInitiateBridgeButtonClicked={() => setOpenConfirmationModal(true)}
+          onOriginChainChanged={(chain) => setOriginChainClicked(chain)}
+          onDestinationChainChanged={(chain) => setDestinationChainClicked(chain)}
+          originChain={originChain}
+          destinationChain={destinationChain}
+          availableChains={Chains}
+          onMaxClick={() => console.log('max')}
+          tokenAmount={register('tokenAmount')}
+          availableTokens={Tokens}
+          selectedToken={selectedToken}
+          destinationAddress={register('destinationAddress')}
         />
         {renderConfirmationModal()}
         {renderTokenModal()}
