@@ -9,6 +9,7 @@ export default {
         'petrol-slumber': '#2a2d3f',
         'corbeau': '#141320',
         'dark-sea': '#080813',
+        'emerald': '#34D6CC',
       },
     },
   },

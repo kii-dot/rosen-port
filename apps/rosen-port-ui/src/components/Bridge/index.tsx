@@ -1,11 +1,9 @@
-import { Chains } from '#/constants/chains';
-import { Tokens } from '#/constants/tokens';
 import { ChevronDoubleDownIcon } from '@heroicons/react/20/solid';
 import BridgeInfo from './BridgeInfo';
 import BridgeCard from '../BridgeCard';
 import BridgeAddressCard from '../BridgeCard/BridgeAddressCard';
 import { IChain, IToken } from '#/types/chains';
-import { FieldValues, UseFormRegister, UseFormRegisterReturn } from 'react-hook-form';
+import { UseFormRegisterReturn } from 'react-hook-form';
 export { Bridge };
 
 const BridgeConstants = {
@@ -85,7 +83,7 @@ function Bridge({
         </button>
       </div>
       <div className="mt-12 lg:mt-3 lg:col-span-1 lg:pr-10 lg:pl-24 lg:pt-10">
-        <BridgeInfo capacityFilledAmount={100} addingAmount={20} thresholdAmount={200} />
+        <BridgeInfo capacityFilledAmount={1000} addingAmount={200} thresholdAmount={2000} />
       </div>
     </form>
   );

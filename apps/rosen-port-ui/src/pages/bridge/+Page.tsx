@@ -20,7 +20,7 @@ function Page() {
 
   const confirmAndInitiateBridge = () => {
     console.log('confirm and initiate bridge');
-    setOpenConfirmationModal(false);
+    setOpenConfirmationModal(true);
   };
 
   const renderConfirmationModal = () => {
@@ -66,7 +66,8 @@ function Page() {
   };
 
   const onSubmit = (d) => {
-    alert(JSON.stringify(d));
+    console.log(JSON.stringify(d));
+    confirmAndInitiateBridge();
   };
 
   return (
