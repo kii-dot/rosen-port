@@ -3,6 +3,8 @@ import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import { H3, H4 } from '../Texts';
 import { KYA } from '#/constants/confirmationModal';
 import { BatchUI } from '../Batch/BatchUI';
+import { ErgToken, SigUSDToken } from '#/constants/tokens';
+import { NetworkChains } from '#/constants/chains';
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -15,8 +17,40 @@ export const ConfirmationModal = ({ open, setOpen, onConfirmClicked }: Confirmat
     <Modal title={'Initiate Bridge Transfer'} open={open} setOpen={setOpen}>
       <div className="flex flex-col">
         {/* Bridge Graphics */}
-        <div>
-          <H3 className="sm:mt-8 sm:mb-2">Confirmation Modal</H3>
+        <div className="space-y-2 pt-6">
+          {/* Coin Graphic */}
+          <div className="flex flex-row justify-between">
+            {/* From Chain Logo */}
+            <div className="flex space-x-1.5 items-center">
+              <img src={SigUSDToken.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full" />
+              <img src={NetworkChains.cardano.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+            </div>
+            {/* arrows */}
+            <div className="text-gray-500 items-center flex">
+              &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+            </div>
+            {/* To Chain Logo */}
+            <div className="flex space-x-1.5 items-center">
+              <img src={NetworkChains.ergo.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+              <img src={SigUSDToken.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full" />
+            </div>
+          </div>
+          {/* Amount */}
+          <div>
+            <div className="flex flex-row justify-between text-white">
+              <div>{150.25}</div>
+              <div>{150.25}</div>
+            </div>
+            {/* Coin Info */}
+            <div className="flex flex-row justify-between text-white font-thin">
+              <div className="text-sm">
+                SigUSD <span className="text-xs text-gray-400">on Cardano</span>
+              </div>
+              <div className="text-sm">
+                SigUSD <span className="text-xs text-gray-400">on Ergo</span>
+              </div>
+            </div>
+          </div>
         </div>
         {/* Current batch Status*/}
         <BatchUI capacityFilledAmount={1000} thresholdAmount={2000} addingAmount={200} />
