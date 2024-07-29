@@ -102,6 +102,7 @@ export default function BridgeCard({
           <div className="flex items-center justify-between space-x-3 px-2 pt-2 sm:px-3">
             <div className="relative">
               <button
+                type="button"
                 onClick={onTokenButtonClicked}
                 className="relative inline-flex items-center whitespace-nowrap font-thin rounded-full bg-black/70 px-2 py-1 text-sm text-white hover:bg-black/90 sm:px-3"
               >
