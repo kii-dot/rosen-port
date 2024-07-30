@@ -29,6 +29,9 @@ function Page() {
         open={openConfirmationModal}
         setOpen={(open) => setOpenConfirmationModal(open)}
         onConfirmClicked={() => confirmAndInitiateBridge()}
+        sourceChain={originChain}
+        destChain={destinationChain}
+        selectedToken={selectedToken}
       />
     );
   };
@@ -45,6 +48,7 @@ function Page() {
         setOpen={(open) => setOpenTokenModal(open)}
         onTokenClicked={(token) => setToken(token)}
         tokens={Tokens}
+        selectedToken={selectedToken}
       />
     );
   };

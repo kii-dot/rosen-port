@@ -14,88 +14,86 @@ interface BridgeCardProps {
 
 export default function BridgeCard({ name, address, selectedChain, chains, setChainChanged }: BridgeCardProps) {
   return (
-    <form action="#" className="relative">
-      <div className="shadow-sm">
-        <div className="flex flex-row">
-          <label htmlFor="title" className="sr-only">
-            {name}
-          </label>
-          <div className="block w-full border-0 pt-2.5 text-xs font-medium text-white text-left">{name}</div>
-          <Listbox as="div" value={selectedChain} onChange={setChainChanged} className="flex-shrink-0">
-            {({ open }) => (
-              <>
-                <Label className="sr-only">Select Chain</Label>
-                <div className="relative">
-                  <ListboxButton className="relative inline-flex items-center whitespace-nowrap font-thin rounded-full bg-indigo-300/10 px-2 py-1 text-sm text-white hover:bg-indigo-300/20 sm:px-3">
-                    <div className="flex flex-row">
-                      <div className="flex flex-row items-center">
-                        {selectedChain === null || selectedChain.id === null ? (
-                          <GlobeAltIcon className="h-5 w-5 flex-shrink-0 text-gray-300 sm:-ml-1" aria-hidden="true" />
+    <div className="shadow-sm">
+      <div className="flex flex-row">
+        <label htmlFor="title" className="sr-only">
+          {name}
+        </label>
+        <div className="block w-full border-0 pt-2.5 text-xs font-medium text-white text-left">{name}</div>
+        <Listbox as="div" value={selectedChain} onChange={setChainChanged} className="flex-shrink-0">
+          {({ open }) => (
+            <>
+              <Label className="sr-only">Select Chain</Label>
+              <div className="relative">
+                <ListboxButton className="relative inline-flex items-center whitespace-nowrap font-thin rounded-full bg-indigo-300/10 px-2 py-1 text-sm text-white hover:bg-indigo-300/20 sm:px-3">
+                  <div className="flex flex-row">
+                    <div className="flex flex-row items-center">
+                      {selectedChain === null || selectedChain.id === null ? (
+                        <GlobeAltIcon className="h-5 w-5 flex-shrink-0 text-gray-300 sm:-ml-1" aria-hidden="true" />
+                      ) : (
+                        <img src={selectedChain.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+                      )}
+
+                      <span className={classNames('hidden truncate sm:ml-2 sm:block')}>
+                        {selectedChain === null || selectedChain.id === null ? 'Select Network' : selectedChain.name}
+                      </span>
+                    </div>
+                    <div className="sm:ml-4">
+                      <ChevronDownIcon
+                        className="h-7 w-7 pl-2 flex-shrink-0 text-gray-300 sm:-ml-1"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                </ListboxButton>
+
+                <ListboxOptions
+                  transition
+                  className="absolute right-0 z-10 mt-1 max-h-56 w-52 overflow-auto rounded-lg bg-petrol-slumber py-3 text-base shadow ring-1 ring-black ring-opacity-5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
+                >
+                  {chains.map((chain) => (
+                    <ListboxOption
+                      key={chain.name}
+                      className={({ focus }) =>
+                        classNames(
+                          focus ? 'bg-corbeau' : '',
+                          !focus ? 'bg-petrol-slumber' : '',
+                          'relative cursor-default select-none px-3 py-2',
+                        )
+                      }
+                      value={chain}
+                    >
+                      <div className="flex items-center">
+                        {chain.icon ? (
+                          <img src={chain.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
                         ) : (
-                          <img src={selectedChain.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+                          <GlobeAltIcon className="h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
                         )}
 
-                        <span className={classNames('hidden truncate sm:ml-2 sm:block')}>
-                          {selectedChain === null || selectedChain.id === null ? 'Select Network' : selectedChain.name}
-                        </span>
+                        <span className="ml-3 block truncate font-thin text-white">{chain.name}</span>
                       </div>
-                      <div className="sm:ml-4">
-                        <ChevronDownIcon
-                          className="h-7 w-7 pl-2 flex-shrink-0 text-gray-300 sm:-ml-1"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    </div>
-                  </ListboxButton>
-
-                  <ListboxOptions
-                    transition
-                    className="absolute right-0 z-10 mt-1 max-h-56 w-52 overflow-auto rounded-lg bg-petrol-slumber py-3 text-base shadow ring-1 ring-black ring-opacity-5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
-                  >
-                    {chains.map((chain) => (
-                      <ListboxOption
-                        key={chain.name}
-                        className={({ focus }) =>
-                          classNames(
-                            focus ? 'bg-corbeau' : '',
-                            !focus ? 'bg-petrol-slumber' : '',
-                            'relative cursor-default select-none px-3 py-2',
-                          )
-                        }
-                        value={chain}
-                      >
-                        <div className="flex items-center">
-                          {chain.icon ? (
-                            <img src={chain.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-                          ) : (
-                            <GlobeAltIcon className="h-5 w-5 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                          )}
-
-                          <span className="ml-3 block truncate font-thin text-white">{chain.name}</span>
-                        </div>
-                      </ListboxOption>
-                    ))}
-                  </ListboxOptions>
-                </div>
-              </>
-            )}
-          </Listbox>
-        </div>
-        <div className="bg-indigo-300/10 rounded-lg pb-2 my-2">
-          <div className="flex items-center justify-between space-x-3 px-2 pt-2 sm:px-3"></div>
-          <div className="flex flex-col items-start px-2 py-2 sm:px-3">
-            {/* <label htmlFor="name" className="pl-3 block text-xs font-medium text-white">
+                    </ListboxOption>
+                  ))}
+                </ListboxOptions>
+              </div>
+            </>
+          )}
+        </Listbox>
+      </div>
+      <div className="bg-indigo-300/10 rounded-lg pb-2 my-2">
+        <div className="flex items-center justify-between space-x-3 px-2 pt-2 sm:px-3"></div>
+        <div className="flex flex-col items-start px-2 py-2 sm:px-3">
+          {/* <label htmlFor="name" className="pl-3 block text-xs font-medium text-white">
               Destination Address
             </label> */}
-            <input
-              type="text"
-              className="block w-full py-1.5 border-none border-transparent text-xl focus:outline-none focus:ring-0 bg-transparent text-gray-100 shadow-sm placeholder:text-gray-400 sm:leading-6"
-              placeholder="Destination Address..."
-              {...address}
-            />
-          </div>
+          <input
+            type="text"
+            className="block w-full py-1.5 border-none border-transparent text-xl focus:outline-none focus:ring-0 bg-transparent text-gray-100 shadow-sm placeholder:text-gray-400 sm:leading-6"
+            placeholder="Destination Address..."
+            {...address}
+          />
         </div>
       </div>
-    </form>
+    </div>
   );
 }

@@ -1,18 +1,26 @@
 import Modal from './ModalBase';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import { H3, H4 } from '../Texts';
 import { KYA } from '#/constants/confirmationModal';
 import { BatchUI } from '../Batch/BatchUI';
-import { ErgToken, SigUSDToken } from '#/constants/tokens';
-import { NetworkChains } from '#/constants/chains';
+import { IChain, IToken } from '#/types/chains';
 
 interface ConfirmationModalProps {
   open: boolean;
   setOpen: (boolean: boolean) => void;
   onConfirmClicked: React.MouseEventHandler;
+  selectedToken: IToken;
+  sourceChain: IChain | null;
+  destChain: IChain | null;
 }
 
-export const ConfirmationModal = ({ open, setOpen, onConfirmClicked }: ConfirmationModalProps) => {
+export const ConfirmationModal = ({
+  open,
+  setOpen,
+  selectedToken,
+  sourceChain,
+  destChain,
+  onConfirmClicked,
+}: ConfirmationModalProps) => {
   return (
     <Modal title={'Initiate Bridge Transfer'} open={open} setOpen={setOpen}>
       <div className="flex flex-col">
@@ -22,8 +30,8 @@ export const ConfirmationModal = ({ open, setOpen, onConfirmClicked }: Confirmat
           <div className="flex flex-row justify-between">
             {/* From Chain Logo */}
             <div className="flex space-x-1.5 items-center">
-              <img src={SigUSDToken.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full" />
-              <img src={NetworkChains.cardano.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+              <img src={selectedToken.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full" />
+              <img src={sourceChain?.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
             </div>
             {/* arrows */}
             <div className="text-gray-500 items-center flex">
@@ -31,8 +39,8 @@ export const ConfirmationModal = ({ open, setOpen, onConfirmClicked }: Confirmat
             </div>
             {/* To Chain Logo */}
             <div className="flex space-x-1.5 items-center">
-              <img src={NetworkChains.ergo.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
-              <img src={SigUSDToken.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full" />
+              <img src={destChain?.icon} alt="" className="h-5 w-5 flex-shrink-0 rounded-full" />
+              <img src={selectedToken.icon} alt="" className="h-8 w-8 flex-shrink-0 rounded-full" />
             </div>
           </div>
           {/* Amount */}
@@ -44,10 +52,10 @@ export const ConfirmationModal = ({ open, setOpen, onConfirmClicked }: Confirmat
             {/* Coin Info */}
             <div className="flex flex-row justify-between text-white font-thin">
               <div className="text-sm">
-                SigUSD <span className="text-xs text-gray-400">on Cardano</span>
+                {selectedToken.name} <span className="text-xs text-gray-400">on {sourceChain?.name}</span>
               </div>
               <div className="text-sm">
-                SigUSD <span className="text-xs text-gray-400">on Ergo</span>
+                {selectedToken.name} <span className="text-xs text-gray-400">on {destChain?.name}</span>
               </div>
             </div>
           </div>
