@@ -2,7 +2,7 @@ import { ArrowLongRightIcon } from '@heroicons/react/20/solid';
 import classNames from 'classnames';
 import { RoundedLabel } from '../Label';
 import { BlockSearch, Spinner } from '../Icons';
-import { TxStatus } from '@rosen-port/db';
+import { TxStatus } from '#/db';
 import { Link } from '../Link';
 import { GetTxUrl } from '#/constants/networkUrl';
 import { UITx } from '#/pages/txs/+Page';
