@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production'){process.exit(1)} \" || husky install",
+    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production'){process.exit(1)} \" || npx husky install",
     "test": "NODE_OPTIONS=--loader=extensionless vitest",
     "test:related": "NODE_OPTIONS=--loader=extensionless vitest related --run",
     "coverage": "npm run test -- --coverage",
