@@ -1,7 +1,7 @@
 import { publicProcedure, router } from '#/trpc/generic';
 import { dbClient } from '#/tools/db';
 import { z } from 'zod';
-import { ContainerStatus, TxStatus, Tx, RefundStatus } from '@rosen-port/db';
+import { ContainerStatus, TxStatus, Tx, RefundStatus } from '#/db';
 import logger from '#/tools/logger';
 import {
   ContainerNotAvailableError,
@@ -9,6 +9,7 @@ import {
   NoTxFoundError,
   TxNotAvailableError,
 } from '#/errors/RouterErrors';
+import { dummyTxData } from './dummydata';
 
 /**
  * The `mainRouter` is responsible for handling various API requests related
@@ -129,7 +130,8 @@ export const mainRouter = router({
     )
     .query(async ({ input }) => {
       try {
-        const txs = await dbClient.tx.getUserTxs(input.walletAddress);
+        // const txs = await dbClient.tx.getUserTxs(input.walletAddress);
+        const txs = dummyTxData;
 
         return {
           txs,
